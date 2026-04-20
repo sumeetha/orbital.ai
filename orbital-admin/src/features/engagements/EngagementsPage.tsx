@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import {
   Map, BellRing, ClipboardList, Pause, Play, Trash2, ArrowUpRight,
   Crosshair, ListChecks, Flag, MessageCircle, SquareStack,
   ThumbsUp, Star, FileText, BarChart3, Megaphone,
+  Plus,
 } from 'lucide-react';
 import { PageHeader } from '../../components/PageHeader';
 import { Card, Badge, Button } from '../../components/ui';
@@ -50,6 +50,7 @@ function SubTypeBadge({ subType }: { subType?: EngagementSubType }) {
 export function EngagementsPage({ filterType }: { filterType?: EngagementType }) {
   const { engagements, pauseEngagement, resumeEngagement, archiveEngagement } = useStore();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const tabFilter = filterType || (searchParams.get('type') as EngagementType | null);
 
   const filtered = tabFilter ? engagements.filter((e) => e.type === tabFilter) : engagements;
@@ -68,9 +69,22 @@ export function EngagementsPage({ filterType }: { filterType?: EngagementType })
     ? `All ${typeConfig[filterType].label.toLowerCase()} engagements`
     : 'All active tours, nudges, and feedback';
 
+  const openCreateFlow = () => {
+    const targetType = tabFilter ? `?type=${tabFilter}` : '';
+    navigate(`/engagements/new${targetType}`);
+  };
+
   return (
     <div>
-      <PageHeader title={title} subtitle={subtitle} />
+      <PageHeader
+        title={title}
+        subtitle={subtitle}
+        actions={(
+          <Button size="sm" onClick={openCreateFlow}>
+            <Plus size={14} /> Create Engagement
+          </Button>
+        )}
+      />
 
       {!filterType && (
         <div className="grid grid-cols-4 gap-4 mb-6">

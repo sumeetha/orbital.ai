@@ -3,7 +3,7 @@ import { type KnowledgeSource, type ExtractedKnowledge, sampleSources, sampleExt
 import { type Hotspot, hotspots } from '../mock/hotspots';
 import { type Suggestion, type RateLimits, mockSuggestions, defaultRateLimits } from '../mock/suggestions';
 import { type Engagement, type EngagementStatus, mockEngagements } from '../mock/engagements';
-import { type BrandSettings, type ButtonStyle, defaultBrandSettings, autoDetectedBrand } from '../mock/branding';
+import { type BrandSettings, defaultBrandSettings, autoDetectedBrand } from '../mock/branding';
 import { type TeamMember, type TeamRole, mockTeamMembers, type BillingInfo, mockBillingInfo } from '../mock/settings';
 
 type CapturedElement = {
@@ -69,6 +69,7 @@ type AppState = {
 
   // Engagements
   engagements: Engagement[];
+  createEngagement: (engagement: Omit<Engagement, 'id'>) => void;
   pauseEngagement: (id: string) => void;
   resumeEngagement: (id: string) => void;
   archiveEngagement: (id: string) => void;
@@ -210,6 +211,16 @@ export const useStore = create<AppState>((set, get) => ({
 
   // Engagements
   engagements: mockEngagements,
+  createEngagement: (engagement) =>
+    set((s) => ({
+      engagements: [
+        {
+          ...engagement,
+          id: `eng-${Date.now()}`,
+        },
+        ...s.engagements,
+      ],
+    })),
   pauseEngagement: (id) =>
     set((s) => ({
       engagements: s.engagements.map((e) =>
