@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, Flag, MousePointerClick, BarChart3, Check, X, Eye, GripVertical, Plus, Trash2,
+  ArrowLeft, Flag, MousePointerClick, BarChart3, Check, X, GripVertical, Plus, Trash2,
   Crosshair, ListChecks, MessageCircle, SquareStack, Megaphone, ThumbsUp, Star, FileText,
 } from 'lucide-react';
 import { Card, Button, Badge, Input, Textarea } from '../../components/ui';
@@ -39,7 +39,7 @@ function SubTypeBadge({ subType }: { subType?: EngagementSubType }) {
 export function SuggestionDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { suggestions, updateSuggestion, acceptSuggestion, dismissSuggestion } = useStore();
+  const { suggestions, acceptSuggestion, dismissSuggestion } = useStore();
   const suggestion = suggestions.find((s) => s.id === id);
 
   if (!suggestion) {

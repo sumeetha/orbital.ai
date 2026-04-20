@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card, Button, Badge, EditableText, Chip, Modal, Input } from '../../components/ui';
 import { PageHeader } from '../../components/PageHeader';
 import { useStore } from '../../store';
-import { hotspots, pageLabels, type Hotspot, type HotspotTag } from '../../mock/hotspots';
+import { hotspots, pageLabels, type HotspotTag } from '../../mock/hotspots';
 
 const typeIcons: Record<string, typeof Square> = { button: Square, link: LinkIcon, input: Type, section: LayoutGrid };
 const tagColors: Record<string, 'emerald' | 'violet' | 'amber' | 'slate'> = {
