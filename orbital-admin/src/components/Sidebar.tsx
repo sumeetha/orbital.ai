@@ -1,17 +1,30 @@
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, MousePointerClick, MessageSquare, Sparkles, User } from 'lucide-react';
+import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import {
+  LayoutDashboard, BookOpen, MousePointerClick, MessageSquare,
+  Sparkles, User, Plug, FileEdit, ChevronDown, ChevronRight, Bot,
+} from 'lucide-react';
 import { useStore } from '../store';
 
-const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard', journey: null },
+const copilotItems = [
   { to: '/knowledge', icon: BookOpen, label: 'Knowledge Base', journey: 'knowledge' as const },
-  { to: '/annotate', icon: MousePointerClick, label: 'Annotate Product', journey: 'annotation' as const },
-  { to: '/setup', icon: MessageSquare, label: 'Agent Setup', journey: 'setup' as const },
-  { to: '/suggestions', icon: Sparkles, label: 'Suggestions', journey: 'suggestions' as const },
+  { to: '/integrations', icon: Plug, label: 'Integrations', journey: null },
+  { to: '/annotate', icon: MousePointerClick, label: 'Annotations', journey: 'annotation' as const },
+  { to: '/setup', icon: MessageSquare, label: 'Instructions', journey: 'setup' as const },
+  { to: '/suggestions', icon: FileEdit, label: 'Drafts', journey: 'suggestions' as const },
 ];
+
+const copilotPaths = copilotItems.map((item) => item.to);
 
 export function Sidebar() {
   const journeyComplete = useStore((s) => s.journeyComplete);
+  const location = useLocation();
+  const isCopilotActive = copilotPaths.some((p) =>
+    p === '/suggestions' ? location.pathname.startsWith('/suggestions') : location.pathname === p
+  );
+  const [copilotOpen, setCopilotOpen] = useState(isCopilotActive);
+
+  const copilotExpanded = copilotOpen || isCopilotActive;
 
   return (
     <aside className="w-60 bg-orbital-bg text-orbital-text flex flex-col shrink-0 h-screen sticky top-0">
@@ -24,28 +37,63 @@ export function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map((item) => {
-          const complete = item.journey ? journeyComplete[item.journey] : false;
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                  isActive ? 'bg-orbital-surface text-white' : 'text-orbital-text-muted hover:text-white hover:bg-orbital-surface/50'
-                }`
-              }
-            >
-              <item.icon size={18} />
-              <span className="flex-1">{item.label}</span>
-              {item.journey && (
-                <span className={`w-2 h-2 rounded-full ${complete ? 'bg-orbital-success' : 'bg-orbital-border'}`} />
-              )}
-            </NavLink>
-          );
-        })}
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {/* Dashboard — top-level */}
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              isActive ? 'bg-orbital-surface text-white' : 'text-orbital-text-muted hover:text-white hover:bg-orbital-surface/50'
+            }`
+          }
+        >
+          <LayoutDashboard size={18} />
+          <span className="flex-1">Dashboard</span>
+        </NavLink>
+
+        {/* Copilot — collapsible section */}
+        <div>
+          <button
+            onClick={() => setCopilotOpen(!copilotExpanded)}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              isCopilotActive
+                ? 'text-white'
+                : 'text-orbital-text-muted hover:text-white hover:bg-orbital-surface/50'
+            }`}
+          >
+            <Bot size={18} />
+            <span className="flex-1 text-left font-medium">Copilot</span>
+            {copilotExpanded
+              ? <ChevronDown size={14} className="text-orbital-text-muted" />
+              : <ChevronRight size={14} className="text-orbital-text-muted" />}
+          </button>
+
+          {copilotExpanded && (
+            <div className="ml-4 mt-0.5 space-y-0.5 border-l border-orbital-border pl-2">
+              {copilotItems.map((item) => {
+                const complete = item.journey ? journeyComplete[item.journey] : false;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                        isActive ? 'bg-orbital-surface text-white' : 'text-orbital-text-muted hover:text-white hover:bg-orbital-surface/50'
+                      }`
+                    }
+                  >
+                    <item.icon size={16} />
+                    <span className="flex-1">{item.label}</span>
+                    {item.journey && (
+                      <span className={`w-2 h-2 rounded-full ${complete ? 'bg-orbital-success' : 'bg-orbital-border'}`} />
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </nav>
 
       <div className="px-4 py-4 border-t border-orbital-border">

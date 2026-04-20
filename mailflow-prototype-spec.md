@@ -13,11 +13,13 @@ MailFlow is a B2B SaaS product that helps small and mid-sized marketing teams cr
 
 ### Primary personas
 
-| Persona | Role | Goals | Typical plan |
-|---|---|---|---|
-| **Maya** | Marketing Manager at an SMB | Launch her first newsletter, look professional, not break anything | Free / Trial |
-| **Devon** | Growth Lead at a mid-market startup | A/B test subject lines, automate follow-ups, prove ROI | Pro |
-| **Priya** | Marketing Ops at a larger team | Manage teammates, integrations, and deliverability | Enterprise |
+
+| Persona   | Role                                | Goals                                                              | Typical plan |
+| --------- | ----------------------------------- | ------------------------------------------------------------------ | ------------ |
+| **Maya**  | Marketing Manager at an SMB         | Launch her first newsletter, look professional, not break anything | Free / Trial |
+| **Devon** | Growth Lead at a mid-market startup | A/B test subject lines, automate follow-ups, prove ROI             | Pro          |
+| **Priya** | Marketing Ops at a larger team      | Manage teammates, integrations, and deliverability                 | Enterprise   |
+
 
 ### Prototype goals
 
@@ -33,18 +35,20 @@ See Section 8.
 
 ## 2. Recommended Tech Stack
 
-| Concern | Choice | Why |
-|---|---|---|
-| Build tool | **Vite** | Fastest dev server for a frontend-only SPA |
-| Framework | **React 18** + **TypeScript** | Matches the stack assumed in [orbital-prototype-spec.md](orbital-prototype-spec.md) |
-| Styling | **Tailwind CSS** | Matches Orbital spec; fast iteration on design tokens |
-| Routing | **React Router v6** | Client-side routing for ~10 screens |
-| State | **Zustand** | Tiny, ergonomic, easy to snapshot for Orbital |
-| Charts | **Recharts** | Minimal API, composes with Tailwind |
-| Icons | **lucide-react** | Clean, consistent SaaS iconography |
-| Fake data | Hand-authored JSON in `src/mock/` | Deterministic, reviewable in PRs |
-| Persistence | `localStorage` mirror of the Zustand store (optional) | Lets a demo survive a refresh; can be toggled off |
-| Linting | ESLint + Prettier + `typescript-eslint` | Standard baseline |
+
+| Concern     | Choice                                                | Why                                                                                 |
+| ----------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Build tool  | **Vite**                                              | Fastest dev server for a frontend-only SPA                                          |
+| Framework   | **React 18** + **TypeScript**                         | Matches the stack assumed in [orbital-prototype-spec.md](orbital-prototype-spec.md) |
+| Styling     | **Tailwind CSS**                                      | Matches Orbital spec; fast iteration on design tokens                               |
+| Routing     | **React Router v6**                                   | Client-side routing for ~10 screens                                                 |
+| State       | **Zustand**                                           | Tiny, ergonomic, easy to snapshot for Orbital                                       |
+| Charts      | **Recharts**                                          | Minimal API, composes with Tailwind                                                 |
+| Icons       | **lucide-react**                                      | Clean, consistent SaaS iconography                                                  |
+| Fake data   | Hand-authored JSON in `src/mock/`                     | Deterministic, reviewable in PRs                                                    |
+| Persistence | `localStorage` mirror of the Zustand store (optional) | Lets a demo survive a refresh; can be toggled off                                   |
+| Linting     | ESLint + Prettier + `typescript-eslint`               | Standard baseline                                                                   |
+
 
 **No backend, no API calls, no auth screens.** A fake `currentUser` is always "logged in" from `src/mock/user.ts`.
 
@@ -92,24 +96,26 @@ mailflow/
 
 ### Route map
 
-| Path | Screen |
-|---|---|
-| `/` | Dashboard |
-| `/campaigns` | Campaigns — List |
-| `/campaigns/new` | Campaigns — Create Wizard (4 steps via query param `?step=`) |
-| `/campaigns/:id` | Campaigns — Detail / Report |
-| `/templates` | Templates — Gallery |
-| `/audiences` | Audiences (tabs: Contacts, Segments) |
-| `/automations` | Automations — List |
-| `/automations/:id` | Automations — Builder |
-| `/analytics` | Analytics |
-| `/settings` | Settings (tabs: Profile, Workspace, Billing, Team, Integrations) |
+
+| Path               | Screen                                                           |
+| ------------------ | ---------------------------------------------------------------- |
+| `/`                | Dashboard                                                        |
+| `/campaigns`       | Campaigns — List                                                 |
+| `/campaigns/new`   | Campaigns — Create Wizard (4 steps via query param `?step=`)     |
+| `/campaigns/:id`   | Campaigns — Detail / Report                                      |
+| `/templates`       | Templates — Gallery                                              |
+| `/audiences`       | Audiences (tabs: Contacts, Segments)                             |
+| `/automations`     | Automations — List                                               |
+| `/automations/:id` | Automations — Builder                                            |
+| `/analytics`       | Analytics                                                        |
+| `/settings`        | Settings (tabs: Profile, Workspace, Billing, Team, Integrations) |
+
 
 ---
 
 ## 4. Screen Inventory
 
-Each screen below lists: **purpose**, **key UI**, **dummy data shown**, **primary CTAs**, and **`data-orbital-id` anchors** (see Section 7 for the registry).
+Each screen below lists: **purpose**, **key UI**, **dummy data shown**, **primary CTAs**, and `**data-orbital-id` anchors** (see Section 7 for the registry).
 
 ### 4.1 Dashboard — `/`
 
@@ -194,6 +200,7 @@ Five tabs (horizontal):
 3. **Billing** — current plan card (Free/Pro/Enterprise with feature list), **Upgrade** button, mock invoice list (3 rows), payment method card (Visa •••• 4242). Clicking **Upgrade** sets `checkout_initiated = true` and routes to a mock `/settings?tab=billing&checkout=1` state that renders a checkout summary.
 4. **Team** — list of teammates with roles; **+ Invite teammate** opens a modal (email + role). Each successful invite increments `teammate_count_delta`.
 5. **Integrations** — grid of logos (Slack, HubSpot, Salesforce, Zapier, Shopify) — all "Connect" buttons are inert.
+
 - **Orbital anchors:** `settings-tab-billing`, `settings-upgrade-btn`, `settings-invite-teammate-btn`.
 
 ### 4.10 Empty states (global)
@@ -302,16 +309,18 @@ type Automation = {
 
 ### Seed volumes
 
-| Entity | Count |
-|---|---|
-| Users | 1 (current) + 4 teammates |
-| Contacts | ~50 |
-| Segments | 4 (`All contacts`, `Engaged last 30d`, `New signups`, `VIPs`) |
-| Templates | 8 (2 per category except blank) |
-| Campaigns | 12 (2 draft, 2 scheduled, 8 sent; 2 of the sent have A/B variants) |
-| Automations | 3 (1 active, 1 paused, 1 draft) |
-| Notifications | 5 |
-| Invoices | 3 |
+
+| Entity        | Count                                                              |
+| ------------- | ------------------------------------------------------------------ |
+| Users         | 1 (current) + 4 teammates                                          |
+| Contacts      | ~50                                                                |
+| Segments      | 4 (`All contacts`, `Engaged last 30d`, `New signups`, `VIPs`)      |
+| Templates     | 8 (2 per category except blank)                                    |
+| Campaigns     | 12 (2 draft, 2 scheduled, 8 sent; 2 of the sent have A/B variants) |
+| Automations   | 3 (1 active, 1 paused, 1 draft)                                    |
+| Notifications | 5                                                                  |
+| Invoices      | 3                                                                  |
+
 
 Stats should look realistic (open rates 20–45%, click rates 2–8%, bounces <2%).
 
@@ -321,22 +330,24 @@ Stats should look realistic (open rates 20–45%, click rates 2–8%, bounces <2
 
 ### Tokens
 
-| Token | Value |
-|---|---|
-| `--color-primary` | `#0984e3` |
-| `--color-primary-hover` | `#0873c4` |
-| `--color-bg` | `#f8fafc` (slate-50) |
-| `--color-surface` | `#ffffff` |
-| `--color-border` | `#e2e8f0` (slate-200) |
-| `--color-text` | `#0f172a` (slate-900) |
-| `--color-text-muted` | `#64748b` (slate-500) |
-| `--color-success` | `#10b981` |
-| `--color-warning` | `#f59e0b` |
-| `--color-danger` | `#ef4444` |
-| `--radius` | `8px` |
-| `--radius-lg` | `12px` |
-| `--shadow-card` | `0 1px 2px rgba(15,23,42,.04), 0 4px 12px rgba(79,70,229,.06)` |
-| `--font` | `"Inter", system-ui, sans-serif` |
+
+| Token                   | Value                                                          |
+| ----------------------- | -------------------------------------------------------------- |
+| `--color-primary`       | `#0984e3`                                                      |
+| `--color-primary-hover` | `#0873c4`                                                      |
+| `--color-bg`            | `#f8fafc` (slate-50)                                           |
+| `--color-surface`       | `#ffffff`                                                      |
+| `--color-border`        | `#e2e8f0` (slate-200)                                          |
+| `--color-text`          | `#0f172a` (slate-900)                                          |
+| `--color-text-muted`    | `#64748b` (slate-500)                                          |
+| `--color-success`       | `#10b981`                                                      |
+| `--color-warning`       | `#f59e0b`                                                      |
+| `--color-danger`        | `#ef4444`                                                      |
+| `--radius`              | `8px`                                                          |
+| `--radius-lg`           | `12px`                                                         |
+| `--shadow-card`         | `0 1px 2px rgba(15,23,42,.04), 0 4px 12px rgba(79,70,229,.06)` |
+| `--font`                | `"Inter", system-ui, sans-serif`                               |
+
 
 Tailwind `theme.extend` should mirror the tokens so utility classes like `bg-primary`, `rounded-md`, `shadow-card` work.
 
@@ -346,13 +357,15 @@ Tailwind `theme.extend` should mirror the tokens so utility classes like `bg-pri
 
 ### Status chip colors
 
-| Status | Color |
-|---|---|
-| Draft | slate |
-| Scheduled | amber |
-| Sent | emerald |
-| Paused | slate |
-| Active | emerald |
+
+| Status    | Color   |
+| --------- | ------- |
+| Draft     | slate   |
+| Scheduled | amber   |
+| Sent      | emerald |
+| Paused    | slate   |
+| Active    | emerald |
+
 
 ### Charts
 
@@ -435,30 +448,34 @@ An event bus (`window.__mailflow.on(event, cb)`) emits: `campaign:created`, `cam
 
 Every element Orbital needs to highlight gets a stable, kebab-case id. The prototype ships a single source of truth at `src/orbital/ids.ts` so typos are caught at compile time.
 
-| Area | ID |
-|---|---|
-| Sidebar | `sidebar-dashboard`, `sidebar-campaigns`, `sidebar-templates`, `sidebar-audiences`, `sidebar-automations`, `sidebar-analytics`, `sidebar-settings`, `sidebar-upgrade-card` |
-| Top bar | `topbar-search`, `topbar-notifications`, `topbar-user-menu` |
-| Dashboard | `dashboard-kpi-sent`, `dashboard-kpi-open-rate`, `dashboard-kpi-click-rate`, `dashboard-kpi-subscribers`, `dashboard-quickstart-create`, `dashboard-quickstart-import`, `dashboard-quickstart-templates`, `dashboard-recent-campaigns-table` |
-| Campaigns list | `campaigns-list-create-btn`, `campaigns-list-filter-status`, `campaigns-list-search` |
-| Create wizard | `wizard-step-template`, `wizard-step-audience`, `wizard-step-content`, `wizard-step-review`, `wizard-subject-input`, `wizard-audience-select`, `wizard-add-variant-btn`, `wizard-next-btn`, `wizard-back-btn`, `wizard-send-btn` |
-| Campaign detail | `campaign-detail-send-now`, `campaign-detail-tab-overview`, `campaign-detail-tab-links`, `campaign-detail-tab-recipients`, `campaign-detail-tab-ab` |
-| Templates | `templates-category-newsletter`, `templates-category-announcement`, `templates-category-promo`, `templates-category-transactional`, `templates-use-btn` |
-| Audiences | `audiences-tab-contacts`, `audiences-tab-segments`, `audiences-import-btn`, `audiences-import-upload-sample`, `audiences-new-segment-btn` |
-| Automations | `automations-create-btn`, `automations-trigger-node`, `automations-add-step-btn`, `automations-status-toggle` |
-| Analytics | `analytics-date-range`, `analytics-funnel`, `analytics-top-campaigns` |
-| Settings | `settings-tab-profile`, `settings-tab-workspace`, `settings-tab-billing`, `settings-tab-team`, `settings-tab-integrations`, `settings-upgrade-btn`, `settings-invite-teammate-btn` |
+
+| Area            | ID                                                                                                                                                                                                                                           |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sidebar         | `sidebar-dashboard`, `sidebar-campaigns`, `sidebar-templates`, `sidebar-audiences`, `sidebar-automations`, `sidebar-analytics`, `sidebar-settings`, `sidebar-upgrade-card`                                                                   |
+| Top bar         | `topbar-search`, `topbar-notifications`, `topbar-user-menu`                                                                                                                                                                                  |
+| Dashboard       | `dashboard-kpi-sent`, `dashboard-kpi-open-rate`, `dashboard-kpi-click-rate`, `dashboard-kpi-subscribers`, `dashboard-quickstart-create`, `dashboard-quickstart-import`, `dashboard-quickstart-templates`, `dashboard-recent-campaigns-table` |
+| Campaigns list  | `campaigns-list-create-btn`, `campaigns-list-filter-status`, `campaigns-list-search`                                                                                                                                                         |
+| Create wizard   | `wizard-step-template`, `wizard-step-audience`, `wizard-step-content`, `wizard-step-review`, `wizard-subject-input`, `wizard-audience-select`, `wizard-add-variant-btn`, `wizard-next-btn`, `wizard-back-btn`, `wizard-send-btn`             |
+| Campaign detail | `campaign-detail-send-now`, `campaign-detail-tab-overview`, `campaign-detail-tab-links`, `campaign-detail-tab-recipients`, `campaign-detail-tab-ab`                                                                                          |
+| Templates       | `templates-category-newsletter`, `templates-category-announcement`, `templates-category-promo`, `templates-category-transactional`, `templates-use-btn`                                                                                      |
+| Audiences       | `audiences-tab-contacts`, `audiences-tab-segments`, `audiences-import-btn`, `audiences-import-upload-sample`, `audiences-new-segment-btn`                                                                                                    |
+| Automations     | `automations-create-btn`, `automations-trigger-node`, `automations-add-step-btn`, `automations-status-toggle`                                                                                                                                |
+| Analytics       | `analytics-date-range`, `analytics-funnel`, `analytics-top-campaigns`                                                                                                                                                                        |
+| Settings        | `settings-tab-profile`, `settings-tab-workspace`, `settings-tab-billing`, `settings-tab-team`, `settings-tab-integrations`, `settings-upgrade-btn`, `settings-invite-teammate-btn`                                                           |
+
 
 ### 8.4 Mapping to Orbital journeys
 
 The prototype must at minimum support the four journeys from [orbital-prototype-spec.md](orbital-prototype-spec.md):
 
-| Journey | Flag(s) needed | Anchor(s) needed |
-|---|---|---|
-| A — Free Activation Rescue | `CONTACTS_UPLOADED && !CAMPAIGN_CREATED` | `sidebar-templates`, `dashboard-quickstart-create` |
-| B — Contextual Paywall | `active_tests == 2`, click on `wizard-add-variant-btn` | `wizard-add-variant-btn` |
-| C — Revenue Recovery | `checkout_initiated && route !== '/settings?checkout=1'` | `settings-tab-billing`, `settings-upgrade-btn` |
-| D — Expansion Signal | `teammate_count_delta >= 3` | `settings-invite-teammate-btn` |
+
+| Journey                    | Flag(s) needed                                           | Anchor(s) needed                                   |
+| -------------------------- | -------------------------------------------------------- | -------------------------------------------------- |
+| A — Free Activation Rescue | `CONTACTS_UPLOADED && !CAMPAIGN_CREATED`                 | `sidebar-templates`, `dashboard-quickstart-create` |
+| B — Contextual Paywall     | `active_tests == 2`, click on `wizard-add-variant-btn`   | `wizard-add-variant-btn`                           |
+| C — Revenue Recovery       | `checkout_initiated && route !== '/settings?checkout=1'` | `settings-tab-billing`, `settings-upgrade-btn`     |
+| D — Expansion Signal       | `teammate_count_delta >= 3`                              | `settings-invite-teammate-btn`                     |
+
 
 ---
 
@@ -504,3 +521,4 @@ Once this spec is signed off, the build task will:
 6. Wire up the `window.__mailflow` bridge and the `data-orbital-id` registry.
 7. Polish: empty states, toasts, loading shimmer where appropriate.
 8. Smoke-test each of the four Orbital journeys end-to-end manually.
+

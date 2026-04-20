@@ -42,6 +42,7 @@ type AppState = {
   captureElement: (hotspotId: string) => void;
   updateElementDescription: (hotspotId: string, description: string) => void;
   updateElementTags: (hotspotId: string, tags: string[]) => void;
+  removeElement: (hotspotId: string) => void;
   completeAnnotation: () => void;
 
   // Setup
@@ -118,6 +119,10 @@ export const useStore = create<AppState>((set, get) => ({
       capturedElements: s.capturedElements.map((e) =>
         e.hotspot.id === hotspotId ? { ...e, tags } : e
       ),
+    })),
+  removeElement: (hotspotId) =>
+    set((s) => ({
+      capturedElements: s.capturedElements.filter((e) => e.hotspot.id !== hotspotId),
     })),
   completeAnnotation: () =>
     set((s) => ({ journeyComplete: { ...s.journeyComplete, annotation: true } })),

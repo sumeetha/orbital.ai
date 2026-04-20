@@ -85,6 +85,38 @@ export const hotspots: Hotspot[] = [
     tags: ['Paid Feature'],
     confidence: 'high',
   },
+  // Campaigns List
+  {
+    id: 'hs-campaigns-create-btn',
+    page: 'campaigns',
+    elementName: 'Create Campaign Button',
+    elementType: 'button',
+    position: { top: '0', left: '0', width: '0', height: '0' },
+    aiDescription: 'Primary CTA on the campaigns list page. Opens the campaign creation wizard. Key entry point for the activation flow.',
+    tags: ['Key Activation Point'],
+    confidence: 'high',
+    relatedTo: ['hs-wizard-template-gallery'],
+  },
+  {
+    id: 'hs-campaigns-filter-bar',
+    page: 'campaigns',
+    elementName: 'Status Filter Bar',
+    elementType: 'section',
+    position: { top: '0', left: '0', width: '0', height: '0' },
+    aiDescription: 'Filter chips (All, Draft, Scheduled, Sent) that let users narrow the campaigns list by status. Helps users find campaigns quickly.',
+    tags: [],
+    confidence: 'high',
+  },
+  {
+    id: 'hs-campaigns-list-table',
+    page: 'campaigns',
+    elementName: 'Campaign List Table',
+    elementType: 'section',
+    position: { top: '0', left: '0', width: '0', height: '0' },
+    aiDescription: 'The main campaign list showing all campaigns with name, open rate, and status. Users spend most of their time on this view.',
+    tags: [],
+    confidence: 'high',
+  },
   // Campaign Wizard
   {
     id: 'hs-wizard-template-gallery',

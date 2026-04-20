@@ -15,11 +15,11 @@ This prototype covers the **admin experience**: the dashboard a Growth PM uses t
 
 ### Target host product
 
-The prototype assumes **MailFlow** (the B2B email marketing SaaS defined in [mailflow-prototype-spec.md](mailflow-prototype-spec.md)) as the product being configured. All mock data, screenshots, semantic maps, and example suggestions are MailFlow-specific.
+The prototype assumes **MailFlow** (the B2B email marketing SaaS defined in [mailflow-prototype-spec.md](mailflow-prototype-spec.md)) as the product being configured. All mock data, screenshots, semantic maps, and example drafts are MailFlow-specific.
 
 ### Prototype goals
 
-1. Visualize the full PM onboarding journey: uploading knowledge, annotating the product, defining goals, and reviewing AI-generated suggestions.
+1. Visualize the full PM onboarding journey: uploading knowledge, annotating the product, defining goals, and reviewing AI-generated drafts.
 2. Demonstrate how the AI agent builds understanding progressively — from docs, to UI structure, to business context — and synthesizes it into actionable guidance.
 3. Be interactive enough for stakeholder walkthroughs: clickable hotspots, live-updating maps, editable fields, and simulated AI responses.
 
@@ -36,7 +36,7 @@ See Section 10.
 | Build tool | **Vite** | Same as MailFlow prototype; fast dev server |
 | Framework | **React 18** + **TypeScript** | Consistent with the existing codebase |
 | Styling | **Tailwind CSS** | Rapid iteration, consistent with MailFlow |
-| Routing | **React Router v6** | Client-side routing for ~8 screens |
+| Routing | **React Router v6** | Client-side routing for ~9 screens |
 | State | **Zustand** | Lightweight; state flows across journeys |
 | Tree visualization | **Custom React component** or **react-d3-tree** | For the semantic map |
 | Icons | **lucide-react** | Consistent with MailFlow |
@@ -56,9 +56,10 @@ orbital-admin/
     features/
       dashboard/                # Admin home / setup overview
       knowledge/                # Journey 0: doc upload + URL ingestion
+      integrations/             # Integrations: MCP servers, CRMs, product analytics
       annotation/               # Journey 1: browser simulation + live semantic map
-      agent-setup/              # Journey 2: conversational goal/metric setup
-      suggestions/              # Journey 3: AI-generated tour/nudge proposals
+      instructions/             # Journey 2: conversational goal/metric setup
+      drafts/                   # Journey 3: AI-generated tour/nudge drafts
     store/                      # Zustand slices
     mock/                       # All scripted data (see Section 6)
     lib/                        # Helpers, formatters
@@ -77,8 +78,16 @@ orbital-admin/
 
 - **Left sidebar (persistent, dark):**
   - Orbital logo (wordmark)
-  - Nav items: Dashboard, Knowledge Base, Annotate Product, Agent Setup, Suggestions
+  - Nav items:
+    - **Dashboard** (top-level)
+    - **Copilot** (collapsible section with sub-menus):
+      - Knowledge Base
+      - Integrations
+      - Annotations
+      - Instructions
+      - Drafts
   - Each nav item shows a completion indicator (empty circle / checkmark / in-progress dot)
+  - The Copilot section auto-expands when active; sub-items indent under the parent
   - Footer: workspace name ("MailFlow"), user avatar + name ("Sarah Kim, Growth PM")
 
 - **Top bar (persistent):**
@@ -88,14 +97,15 @@ orbital-admin/
 
 ### Route map
 
-| Path | Screen | Journey |
-|------|--------|---------|
-| `/` | Dashboard | — |
-| `/knowledge` | Knowledge Base | Journey 0 |
-| `/annotate` | Annotation Session | Journey 1 |
-| `/setup` | Agent Setup Chat | Journey 2 |
-| `/suggestions` | AI Suggestions List | Journey 3 |
-| `/suggestions/:id` | Suggestion Detail / Edit | Journey 3 |
+| Path | Screen | Sidebar Location | Journey |
+|------|--------|------------------|---------|
+| `/` | Dashboard | Dashboard | — |
+| `/knowledge` | Knowledge Base | Copilot → Knowledge Base | Journey 0 |
+| `/integrations` | Integrations | Copilot → Integrations | — |
+| `/annotate` | Annotations | Copilot → Annotations | Journey 1 |
+| `/setup` | Instructions | Copilot → Instructions | Journey 2 |
+| `/suggestions` | Drafts | Copilot → Drafts | Journey 3 |
+| `/suggestions/:id` | Draft Detail / Edit | Copilot → Drafts | Journey 3 |
 
 ---
 
@@ -108,19 +118,19 @@ orbital-admin/
   - **Setup Checklist** — 4-step vertical stepper with status indicators:
     1. "Upload product knowledge" (link to `/knowledge`)
     2. "Annotate your product" (link to `/annotate`)
-    3. "Define goals and metrics" (link to `/setup`)
-    4. "Review AI suggestions" (link to `/suggestions`)
+    3. "Define goals and instructions" (link to `/setup`)
+    4. "Review AI drafts" (link to `/suggestions`)
   - Steps show: not started (grey), in progress (blue pulse), completed (green check)
-  - **Active Suggestions Summary** (only visible after Journey 3):
-    - Count of accepted / total suggestions
-    - Mini cards showing top 3 active suggestions with trigger type icons
+  - **Active Drafts Summary** (only visible after Journey 3):
+    - Count of accepted / total drafts
+    - Mini cards showing top 3 active drafts with trigger type icons
   - **Semantic Map Thumbnail** (only visible after Journey 1):
     - Small interactive tree preview, clickable to navigate to `/annotate`
     - Shows: "4 pages, 18 elements annotated"
   - **Recent Activity** — mock log entries:
     - "Knowledge base updated — 3 sources ingested"
     - "Annotation complete — 18 elements across 4 pages"
-    - "9 tour/nudge suggestions generated"
+    - "9 tour/nudge drafts generated"
 
 ---
 
@@ -170,7 +180,55 @@ orbital-admin/
 
 ---
 
-### 4.3 Annotation Session — `/annotate` — Journey 1
+### 4.3 Integrations — `/integrations`
+
+- **Purpose:** PM connects external tools — MCP servers, CRMs, and product analytics platforms — so the copilot can pull live context about users and product usage.
+- **Key UI:**
+
+  **Header area**
+  - Page title: "Integrations"
+  - Subtitle: *"Connect your tools so the copilot can use real context when generating guidance."*
+
+  **Integration Categories (tab bar or segmented filter):**
+  - **All** | **MCP Servers** | **CRM** | **Product Analytics**
+
+  **Available Integrations Grid:**
+  - Each integration is a card with:
+    - **Logo/icon** (e.g., Salesforce, HubSpot, Amplitude, Mixpanel, Segment, PostHog, custom MCP)
+    - **Name** + **Category badge** (CRM / Analytics / MCP)
+    - **One-line description**: e.g., "Sync contact properties and deal stages from HubSpot"
+    - **Status badge**: "Not connected" (grey) / "Connected" (green) / "Configuring" (blue)
+    - **"Connect" button** or **"Configure" button** (if already connected)
+
+  **Mock integrations (pre-loaded):**
+
+  | Name | Category | Description | Default Status |
+  |------|----------|-------------|----------------|
+  | HubSpot | CRM | Sync contact properties, deal stages, and lifecycle data | Not connected |
+  | Salesforce | CRM | Pull account and opportunity data for enterprise users | Not connected |
+  | Amplitude | Product Analytics | Import behavioral events and user cohorts | Not connected |
+  | Mixpanel | Product Analytics | Sync event data, funnels, and retention metrics | Not connected |
+  | PostHog | Product Analytics | Pull session recordings context, feature flags, and events | Not connected |
+  | Segment | Product Analytics | Use Segment as a unified event source | Not connected |
+  | Custom MCP Server | MCP | Connect any tool via the Model Context Protocol | Not connected |
+
+  **Connect flow (simulated):**
+  - Clicking "Connect" opens a config modal with:
+    - API key / token input (mock — any value accepted)
+    - "Test Connection" button → simulated 1.5s spinner → "Connection successful" toast
+    - "Save" button → card updates to "Connected" (green badge)
+  - For "Custom MCP Server": modal shows a server URL input + optional auth token field
+
+  **Connected integrations panel (appears when ≥1 connected):**
+  - Lists connected integrations with last-sync timestamp (mock)
+  - "Disconnect" link on each
+  - Summary: "2 integrations connected — the copilot will use this context when generating drafts."
+
+- **Orbital anchors:** `integrations-category-tabs`, `integrations-grid`, `integrations-connect-modal`, `integrations-connected-panel`
+
+---
+
+### 4.4 Annotations — `/annotate` — Journey 1
 
 - **Purpose:** PM clicks through their product while the AI builds a semantic map of the UI in real time.
 - **Layout:** Split-screen — left 60% is the simulated browser, right 40% is the live semantic map.
@@ -231,15 +289,15 @@ orbital-admin/
 
 - **"Finish Annotation"** button: saves state, marks Journey 1 complete, shows a summary modal:
   - "Annotation complete! I mapped X pages, Y elements, and Z user flows. Ready to set up your goals?"
-  - "Continue to Agent Setup" CTA
+  - "Continue to Instructions" CTA
 
 - **Orbital anchors:** `annotate-toolbar`, `annotate-browser-frame`, `annotate-page-tab-*`, `annotate-finish-btn`, `annotate-map-tree`, `annotate-description-card`
 
 ---
 
-### 4.4 Agent Setup Chat — `/setup` — Journey 2
+### 4.5 Instructions — `/setup` — Journey 2
 
-- **Purpose:** PM defines product goals, activation points, trial structure, key metrics, and friction points via a conversational flow. Answers are pre-filled from Journey 0 docs where possible.
+- **Purpose:** PM defines product goals, activation points, trial structure, key metrics, and friction points via a conversational flow. These serve as instructions for the copilot when generating drafts. Answers are pre-filled from Journey 0 docs where possible.
 - **Layout:** Left sidebar (topics) + main chat area.
 
 #### Left Sidebar — Topic Progress
@@ -324,17 +382,17 @@ A scrolling chat thread. The agent (Orbital avatar + name) sends messages; the P
 - PM adds one and confirms
 
 **Completion:**
-- Agent: *"Setup complete! I now have a clear picture of MailFlow, your goals, your plans, and your risk signals. Let me generate some suggestions."*
-- "View AI Suggestions" CTA button appears in the chat
+- Agent: *"Setup complete! I now have a clear picture of MailFlow, your goals, your plans, and your risk signals. Let me generate some drafts."*
+- "View Drafts" CTA button appears in the chat
 - Navigates to `/suggestions`
 
 - **Orbital anchors:** `setup-sidebar`, `setup-chat-area`, `setup-topic-*`, `setup-confirm-btn`, `setup-continue-btn`
 
 ---
 
-### 4.5 AI Suggestions — `/suggestions` — Journey 3
+### 4.6 Drafts — `/suggestions` — Journey 3
 
-- **Purpose:** The agent synthesizes knowledge from Journeys 0–2 and presents auto-generated tour/nudge proposals with triggers, rate limits, and step previews.
+- **Purpose:** The copilot synthesizes knowledge from Journeys 0–2 and presents auto-generated tour/nudge drafts with triggers, rate limits, and step previews.
 - **Layout:** Full-width card list with a global settings panel at top.
 
 #### Global Rate Limits Card (top of page)
@@ -360,12 +418,12 @@ A distinct card (subtle border, settings icon) showing AI-proposed rate limits:
   3. State-based triggers (proactive — opportunity to guide)
 - PM can reorder priorities by dragging
 
-#### Suggestions List
+#### Drafts List
 
 Header: *"Based on your product goals, UI structure, and documentation, here are 9 recommended tours and nudges:"*
 
-Each suggestion is an **expandable card** with:
-- **Status badge**: "Suggested" (blue) / "Accepted" (green) / "Dismissed" (grey)
+Each draft is an **expandable card** with:
+- **Status badge**: "Draft" (blue) / "Accepted" (green) / "Dismissed" (grey)
 - **Title**: e.g., "First Campaign Activation Tour"
 - **Trigger type icon + label**: State (flag) / Behavioral (cursor) / Metric (chart)
 - **Trigger condition** (one-line summary): e.g., "New free user, no campaign sent in 48h"
@@ -374,11 +432,11 @@ Each suggestion is an **expandable card** with:
 - **Actions row**: "Preview" | "Edit" | "Accept" | "Dismiss"
 
 Expanding a card reveals:
-- **Rationale**: Why the AI suggested this (references specific goals/metrics/annotation data)
+- **Rationale**: Why the copilot drafted this (references specific goals/metrics/annotation data)
 - **Tour steps preview**: Numbered list of steps with element names and messages
 - **Trigger details**: Full condition breakdown
 
-#### Mock Suggestions (9 total)
+#### Mock Drafts (9 total)
 
 **State-based triggers:**
 
@@ -452,16 +510,16 @@ Expanding a card reveals:
 
 ---
 
-### 4.6 Suggestion Detail / Edit — `/suggestions/:id`
+### 4.7 Draft Detail / Edit — `/suggestions/:id`
 
-- **Purpose:** Full editing view for a single suggestion.
+- **Purpose:** Full editing view for a single draft.
 - **Key UI:**
 
   **Header:**
-  - Suggestion title (editable)
+  - Draft title (editable)
   - Status badge + toggle (Accept / Dismiss)
   - "Preview Tour" button
-  - "Back to Suggestions" breadcrumb
+  - "Back to Drafts" breadcrumb
 
   **Trigger Conditions Panel:**
   - Visual builder with dropdowns and chips, grouped by type:
@@ -486,27 +544,27 @@ Expanding a card reveals:
   - Delay input: "Show X seconds after trigger fires" (default: 2s)
 
   **Rate Limit Override:**
-  - Toggle: "Use global limits" (default on) / "Custom for this suggestion"
+  - Toggle: "Use global limits" (default on) / "Custom for this draft"
   - If custom: same fields as global card (max per day, cooldown, etc.)
 
   **Preview Thumbnail:**
   - Small screenshot of the target MailFlow page with the first tour step overlay shown
   - Clicking opens the full preview modal
 
-- **Orbital anchors:** `suggestion-edit-title`, `suggestion-edit-triggers`, `suggestion-edit-steps`, `suggestion-edit-timing`, `suggestion-edit-preview-btn`
+- **Orbital anchors:** `draft-edit-title`, `draft-edit-triggers`, `draft-edit-steps`, `draft-edit-timing`, `draft-edit-preview-btn`
 
 ---
 
-### 4.7 Tour Preview Modal
+### 4.8 Tour Preview Modal
 
 - **Purpose:** Shows the PM exactly what an end-user would see.
 - **Key UI:**
   - Full-screen modal with a simulated MailFlow browser frame
-  - The selected suggestion's tour plays step-by-step:
+  - The selected draft's tour plays step-by-step:
     - Spotlight highlight on the target element (darkened backdrop + cutout)
     - Tooltip card with Orbital avatar, step message, step counter (1/7), Next/Back buttons
   - PM clicks "Next" to advance through steps manually
-  - "Close Preview" button returns to the suggestion detail or list
+  - "Close Preview" button returns to the draft detail or list
 
 ---
 
@@ -579,6 +637,24 @@ type ExtractedKnowledge = {
 };
 ```
 
+### `src/mock/integrations.ts`
+
+```ts
+type Integration = {
+  id: string;
+  name: string;
+  category: 'crm' | 'product_analytics' | 'mcp';
+  description: string;
+  logo: string; // icon name or path
+  status: 'not_connected' | 'configuring' | 'connected';
+  lastSync?: string;
+  config?: {
+    apiKey?: string;
+    serverUrl?: string;
+  };
+};
+```
+
 ### `src/mock/hotspots.ts`
 
 ```ts
@@ -611,7 +687,7 @@ type AgentMessage = {
 
 Pre-scripted conversation is an ordered array of `AgentMessage` objects. The UI advances through the array as the PM confirms each topic.
 
-### `src/mock/suggestions.ts`
+### `src/mock/drafts.ts`
 
 ```ts
 type TriggerCondition =
@@ -619,21 +695,21 @@ type TriggerCondition =
   | { type: 'behavioral'; behavior: 'rage_clicks' | 'dead_clicks' | 'scroll_thrashing' | 'exit_intent' | 'decision_paralysis' | 'back_and_forth'; targetElement?: string; threshold?: string }
   | { type: 'metric'; metric: string; op: 'above' | 'below' | 'equals'; value: number };
 
-type SuggestionStep = {
+type DraftStep = {
   targetHotspotId: string;
   message: string;
   advanceOn: 'click' | 'navigation' | 'timer' | 'event';
 };
 
-type Suggestion = {
+type Draft = {
   id: string;
   title: string;
-  status: 'suggested' | 'accepted' | 'dismissed';
+  status: 'draft' | 'accepted' | 'dismissed';
   triggerType: 'state' | 'behavioral' | 'metric';
   triggers: TriggerCondition[];
   segment: string;
   actionType: 'tour' | 'nudge' | 'tooltip';
-  steps: SuggestionStep[];
+  steps: DraftStep[];
   rationale: string;
   priority: number;
 };
@@ -679,20 +755,22 @@ type SetupAnswers = {
 |-------|-------|-------------|
 | `knowledgeSlice` | `sources: KnowledgeSource[]`, `extracted: ExtractedKnowledge`, `isProcessing: boolean` | `addSource()`, `removeSource()`, `updateExtractedField()`, `loadSampleDocs()` |
 | `annotationSlice` | `capturedElements: CapturedElement[]`, `activePage: string`, `mapNodes: MapNode[]` | `captureElement(hotspotId)`, `updateDescription(id, text)`, `addTag(id, tag)`, `removeTag(id, tag)`, `setActivePage(page)` |
-| `setupSlice` | `answers: SetupAnswers`, `currentTopic: number`, `completedTopics: number[]` | `confirmTopic(topic, data)`, `updateAnswer(field, value)`, `goToTopic(index)` |
-| `suggestionsSlice` | `suggestions: Suggestion[]`, `rateLimits: RateLimits`, `isGenerating: boolean` | `acceptSuggestion(id)`, `dismissSuggestion(id)`, `updateSuggestion(id, data)`, `updateRateLimits(limits)`, `generateSuggestions()` |
-| `uiSlice` | `sidebarCollapsed: boolean`, `currentJourney: number`, `previewOpen: boolean`, `previewSuggestionId: string | null` | `toggleSidebar()`, `setJourney(n)`, `openPreview(id)`, `closePreview()` |
+| `integrationsSlice` | `integrations: Integration[]`, `connectedCount: number` | `connectIntegration(id)`, `disconnectIntegration(id)`, `testConnection(id)` |
+| `instructionsSlice` | `answers: SetupAnswers`, `currentTopic: number`, `completedTopics: number[]` | `confirmTopic(topic, data)`, `updateAnswer(field, value)`, `goToTopic(index)` |
+| `draftsSlice` | `drafts: Draft[]`, `rateLimits: RateLimits`, `isGenerating: boolean` | `acceptDraft(id)`, `dismissDraft(id)`, `updateDraft(id, data)`, `updateRateLimits(limits)`, `generateDrafts()` |
+| `uiSlice` | `sidebarCollapsed: boolean`, `copilotExpanded: boolean`, `currentJourney: number`, `previewOpen: boolean`, `previewDraftId: string | null` | `toggleSidebar()`, `toggleCopilotSection()`, `setJourney(n)`, `openPreview(id)`, `closePreview()` |
 
 ### Cross-slice data flow
 
 ```mermaid
 flowchart LR
-    Knowledge["knowledgeSlice (extracted)"] --> Setup["setupSlice (pre-fills)"]
-    Annotation["annotationSlice (map)"] --> Setup
-    Annotation --> Suggestions["suggestionsSlice (element targets)"]
-    Setup --> Suggestions
-    Knowledge --> Suggestions
-    Suggestions --> UI["uiSlice (preview, dashboard)"]
+    Knowledge["knowledgeSlice (extracted)"] --> Instructions["instructionsSlice (pre-fills)"]
+    Annotation["annotationSlice (map)"] --> Instructions
+    Annotation --> Drafts["draftsSlice (element targets)"]
+    Instructions --> Drafts
+    Knowledge --> Drafts
+    Integrations["integrationsSlice (context)"] --> Drafts
+    Drafts --> UI["uiSlice (preview, dashboard)"]
 ```
 
 ---
@@ -763,18 +841,18 @@ flowchart LR
 - "Finish Annotation" shows a summary modal and marks Journey 1 complete
 - If the PM navigates away without finishing, state persists in Zustand (lost on refresh)
 
-### Journey 2 — Agent Setup
+### Journey 2 — Instructions
 - Chat auto-scrolls to the latest message
 - Pre-fill cards have a subtle "AI-generated" badge and source attribution text
 - Editing a pre-fill card: click on any field → it becomes an input → edit → click "Confirm" to lock
 - Quick-reply chips: click to select (multi-select where noted), selected chips get a checkmark
 - After confirming a topic, the sidebar item gets a green checkmark and the next topic auto-starts
 - PM can click a completed sidebar topic to scroll back and re-edit (unlocks the card)
-- "View AI Suggestions" button pulses gently to draw attention after completion
+- "View Drafts" button pulses gently to draw attention after completion
 
-### Journey 3 — Suggestions
+### Journey 3 — Drafts
 - Page loads with a 3s "generating" animation (pulsing dots + rotating messages: "Analyzing your product structure…", "Matching goals to UI elements…", "Generating recommendations…")
-- Suggestion cards animate in one by one (200ms stagger)
+- Draft cards animate in one by one (200ms stagger)
 - Expand/collapse cards with smooth height transition
 - "Accept" moves status to accepted (green badge), card stays in list
 - "Dismiss" greys out the card, moves it to bottom of list, "Undo" link appears for 5s
@@ -828,15 +906,16 @@ These can be actual screenshots from the running MailFlow prototype, or simplifi
 
 1. Scaffold Vite + React + TS + Tailwind, install deps (zustand, react-router, framer-motion, lucide-react).
 2. Build the design system: tokens, base components (Button, Card, Input, Chip, Modal, etc.).
-3. Build the app shell: sidebar, top bar, routing.
+3. Build the app shell: sidebar (with collapsible Copilot section), top bar, routing.
 4. Build the Zustand store with all slices and mock data files.
 5. **Journey 0:** Knowledge Base screen (upload zone, URL input, extracted knowledge panel).
-6. **Journey 1:** Annotation screen (browser frame, hotspot overlays, live semantic map tree, AI description cards).
-7. **Journey 2:** Agent Setup chat (chat UI, pre-fill cards, quick-reply chips, topic sidebar).
-8. **Journey 3:** Suggestions list (rate limits card, suggestion cards, expand/collapse, accept/dismiss).
-9. **Journey 3 cont.:** Suggestion detail/edit page (trigger builder, step editor, timing controls).
-10. Tour Preview modal (simulated MailFlow frame + spotlight overlay).
-11. Dashboard (setup checklist, active suggestions summary, semantic map thumbnail).
-12. Polish: animations (framer-motion), typing effects, stagger animations, transition polish.
-13. Capture MailFlow screenshots for annotation assets.
-14. End-to-end walkthrough test of all 4 journeys.
+6. **Integrations:** Integrations screen (integration cards, connect modal, connected panel).
+7. **Journey 1:** Annotations screen (browser frame, hotspot overlays, live semantic map tree, AI description cards).
+8. **Journey 2:** Instructions chat (chat UI, pre-fill cards, quick-reply chips, topic sidebar).
+9. **Journey 3:** Drafts list (rate limits card, draft cards, expand/collapse, accept/dismiss).
+10. **Journey 3 cont.:** Draft detail/edit page (trigger builder, step editor, timing controls).
+11. Tour Preview modal (simulated MailFlow frame + spotlight overlay).
+12. Dashboard (setup checklist, active drafts summary, semantic map thumbnail).
+13. Polish: animations (framer-motion), typing effects, stagger animations, transition polish.
+14. Capture MailFlow screenshots for annotation assets.
+15. End-to-end walkthrough test of all 4 journeys + integrations screen.
