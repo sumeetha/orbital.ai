@@ -3,6 +3,7 @@ import { X, MessageSquare, BookOpen, Rocket, Send, ChevronRight } from 'lucide-r
 import HelpCenter from './HelpCenter';
 import Launchpad from './Launchpad';
 import { useTour, type TourId } from './TourEngine';
+import { buildTourFromQuestion } from './dynamicTour';
 import { useStore } from '../store';
 import type { OrbitalChatLine } from '../store';
 
@@ -43,6 +44,13 @@ function getCannedResponse(input: string): string {
   return cannedResponses.default;
 }
 
+function getSuggestedTour(input: string): TourId | null {
+  const lower = input.toLowerCase();
+  if (lower.includes('automat') || lower.includes('workflow') || lower.includes('trigger')) return 'workflow2';
+  if (lower.includes('campaign') || lower.includes('send') || lower.includes('email')) return 'workflow1';
+  return null;
+}
+
 function renderMessage(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, i) =>
@@ -59,7 +67,7 @@ function renderMessage(text: string) {
 function ChatTab() {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [input, setInput] = useState('');
-  const { isActive, startTour } = useTour();
+  const { isActive, startTour, startGeneratedTour } = useTour();
   const didInitialDrainRef = useRef(false);
 
   const clearTourCtaOnMessage = (messageId: string) => {
@@ -93,16 +101,24 @@ function ChatTab() {
     const text = input.trim();
     if (!text) return;
 
+    const dynamicTour = buildTourFromQuestion(text);
+    const suggestedTour = dynamicTour ? null : getSuggestedTour(text);
     const userMsg: ChatMessage = { id: `u-${Date.now()}`, role: 'user', text };
     const orbitalMsg: ChatMessage = {
       id: `o-${Date.now()}`,
       role: 'orbital',
-      text: getCannedResponse(text),
+      text: dynamicTour?.introMessage ?? getCannedResponse(text),
+      ...(suggestedTour
+        ? { tourCta: { ctaLabel: 'Start recommended tour', tourId: suggestedTour } }
+        : {}),
     };
 
     setMessages((msgs) => [...msgs, userMsg]);
     setInput('');
     setTimeout(() => setMessages((msgs) => [...msgs, orbitalMsg]), 600);
+    if (dynamicTour) {
+      setTimeout(() => startGeneratedTour(dynamicTour.steps), 650);
+    }
   };
 
   return (
@@ -237,7 +253,11 @@ export default function OrbitalPanel({ onClose }: { onClose: () => void }) {
             <p className="text-sm font-semibold text-white">Orbital</p>
             {activeScenario && (
               <p className="text-[10px] text-white/70">
-                {activeScenario === 'maya' ? 'New User Mode' : 'Trial Conversion Mode'}
+                {activeScenario === 'maya'
+                  ? 'New User Mode'
+                  : activeScenario === 'devon'
+                  ? 'Trial Conversion Mode'
+                  : 'Question-Led Tour Mode'}
               </p>
             )}
           </div>

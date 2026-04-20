@@ -526,12 +526,23 @@ export function AnnotationPage() {
                               }`}
                               onClick={() => setSelectedNode(isSelected ? null : el.hotspot.id)}
                             >
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 group/node">
                                 <TypeIcon size={12} className="text-orbital-text-muted shrink-0" />
                                 <span className="text-sm font-medium truncate">{el.hotspot.elementName}</span>
                                 <Badge color={el.hotspot.confidence === 'high' ? 'green' : 'amber'} className="text-[10px]">
                                   {el.hotspot.confidence}
                                 </Badge>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeElement(el.hotspot.id);
+                                    if (isSelected) setSelectedNode(null);
+                                  }}
+                                  className="ml-auto p-1 rounded opacity-0 group-hover/node:opacity-100 text-orbital-text-muted hover:text-orbital-danger hover:bg-red-50 transition-all shrink-0"
+                                  title="Remove annotation"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
                               </div>
 
                               <AnimatePresence>
@@ -577,18 +588,6 @@ export function AnnotationPage() {
                                         Leads to: {hotspots.find((h) => h.id === el.hotspot.relatedTo![0])?.elementName}
                                       </div>
                                     )}
-                                    <div className="pt-2 mt-1 border-t border-slate-100">
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          removeElement(el.hotspot.id);
-                                          setSelectedNode(null);
-                                        }}
-                                        className="flex items-center gap-1 text-[11px] text-orbital-text-muted hover:text-orbital-danger transition-colors"
-                                      >
-                                        <Trash2 size={11} /> Remove annotation
-                                      </button>
-                                    </div>
                                   </motion.div>
                                 )}
                               </AnimatePresence>

@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
+import { AskArgus } from './components/AskArgus';
 import { DashboardPage } from './features/dashboard/DashboardPage';
 import { KnowledgePage } from './features/knowledge/KnowledgePage';
 import { IntegrationsPage } from './features/integrations/IntegrationsPage';
@@ -7,6 +8,14 @@ import { AnnotationPage } from './features/annotation/AnnotationPage';
 import { SetupPage } from './features/agent-setup/SetupPage';
 import { SuggestionsPage } from './features/suggestions/SuggestionsPage';
 import { SuggestionDetailPage } from './features/suggestions/SuggestionDetailPage';
+import { EngagementsPage } from './features/engagements/EngagementsPage';
+import { ToursPage } from './features/engagements/ToursPage';
+import { NudgesPage } from './features/engagements/NudgesPage';
+import { FeedbackPage } from './features/engagements/FeedbackPage';
+import { InsightsPage } from './features/insights/InsightsPage';
+import { BrandingPage } from './features/branding/BrandingPage';
+import { TeamPage } from './features/settings/TeamPage';
+import { BillingPage } from './features/settings/BillingPage';
 
 export default function App() {
   return (
@@ -22,8 +31,18 @@ export default function App() {
             <Route path="/setup" element={<SetupPage />} />
             <Route path="/suggestions" element={<SuggestionsPage />} />
             <Route path="/suggestions/:id" element={<SuggestionDetailPage />} />
+            <Route path="/engagements" element={<EngagementsPage />} />
+            <Route path="/engagements/tours" element={<ToursPage />} />
+            <Route path="/engagements/nudges" element={<NudgesPage />} />
+            <Route path="/engagements/feedback" element={<FeedbackPage />} />
+            <Route path="/insights" element={<InsightsPage />} />
+            <Route path="/branding" element={<BrandingPage />} />
+            <Route path="/settings" element={<Navigate to="/settings/team" replace />} />
+            <Route path="/settings/team" element={<TeamPage />} />
+            <Route path="/settings/billing" element={<BillingPage />} />
           </Routes>
         </main>
+        <AskArgus />
       </div>
     </BrowserRouter>
   );

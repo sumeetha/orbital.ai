@@ -4,9 +4,14 @@ type EventType =
   | 'campaign:created'
   | 'campaign:sent'
   | 'contacts:imported'
+  | 'segment:modal-open'
+  | 'segment:created'
+  | 'automation:step-added'
+  | 'automation:send-email-added'
   | 'teammate:invited'
   | 'checkout:started'
   | 'checkout:abandoned'
+  | 'plan:upgraded'
   | 'ab:started'
   | 'route:changed';
 

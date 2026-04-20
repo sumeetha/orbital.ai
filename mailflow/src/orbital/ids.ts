@@ -61,10 +61,13 @@ export const ORBITAL_IDS = {
   audiencesImportBtn: 'audiences-import-btn',
   audiencesImportUploadSample: 'audiences-import-upload-sample',
   audiencesNewSegmentBtn: 'audiences-new-segment-btn',
+  audiencesCreateSegmentBtn: 'audiences-create-segment-btn',
+  audiencesSegmentModal: 'audiences-segment-modal',
 
   // Automations
   automationsCreateBtn: 'automations-create-btn',
   automationsTriggerNode: 'automations-trigger-node',
+  automationsAddStepArea: 'automations-add-step-area',
   automationsAddStepBtn: 'automations-add-step-btn',
   automationsStatusToggle: 'automations-status-toggle',
 

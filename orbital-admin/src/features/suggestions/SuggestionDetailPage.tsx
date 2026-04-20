@@ -1,11 +1,40 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Flag, MousePointerClick, BarChart3, Check, X, Eye, GripVertical, Plus, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft, Flag, MousePointerClick, BarChart3, Check, X, Eye, GripVertical, Plus, Trash2,
+  Crosshair, ListChecks, MessageCircle, SquareStack, Megaphone, ThumbsUp, Star, FileText,
+} from 'lucide-react';
 import { Card, Button, Badge, Input, Textarea } from '../../components/ui';
 import { PageHeader } from '../../components/PageHeader';
 import { useStore } from '../../store';
 import type { TriggerType } from '../../mock/suggestions';
+import type { EngagementSubType } from '../../mock/engagements';
 
 const triggerIcons: Record<TriggerType, typeof Flag> = { state: Flag, behavioral: MousePointerClick, metric: BarChart3 };
+
+const subTypeConfig: Record<string, { icon: typeof Flag; label: string; color: string }> = {
+  'spotlight': { icon: Crosshair, label: 'Spotlight', color: 'bg-amber-50 text-amber-700' },
+  'checklist': { icon: ListChecks, label: 'Checklist', color: 'bg-orange-50 text-orange-700' },
+  'banner': { icon: Flag, label: 'Banner', color: 'bg-yellow-50 text-yellow-700' },
+  'popup': { icon: MessageCircle, label: 'Popup', color: 'bg-rose-50 text-rose-700' },
+  'modal': { icon: SquareStack, label: 'Modal', color: 'bg-red-50 text-red-700' },
+  'micro-survey': { icon: Megaphone, label: 'Micro Survey', color: 'bg-violet-50 text-violet-700' },
+  'nps': { icon: BarChart3, label: 'NPS', color: 'bg-purple-50 text-purple-700' },
+  'like-dislike': { icon: ThumbsUp, label: 'Like / Dislike', color: 'bg-fuchsia-50 text-fuchsia-700' },
+  'star-rating': { icon: Star, label: 'Star Rating', color: 'bg-pink-50 text-pink-700' },
+  'large-survey': { icon: FileText, label: 'Large Survey', color: 'bg-indigo-50 text-indigo-700' },
+};
+
+function SubTypeBadge({ subType }: { subType?: EngagementSubType }) {
+  if (!subType) return null;
+  const cfg = subTypeConfig[subType];
+  if (!cfg) return null;
+  const Icon = cfg.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${cfg.color}`}>
+      <Icon size={11} /> {cfg.label}
+    </span>
+  );
+}
 
 export function SuggestionDetailPage() {
   const { id } = useParams();
@@ -152,14 +181,6 @@ export function SuggestionDetailPage() {
             <h3 className="text-sm font-semibold mb-3">Details</h3>
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-orbital-text-muted">Status</label>
-                <div className="mt-1">
-                  <Badge color={suggestion.status === 'accepted' ? 'green' : suggestion.status === 'dismissed' ? 'slate' : 'blue'}>
-                    {suggestion.status}
-                  </Badge>
-                </div>
-              </div>
-              <div>
                 <label className="text-xs text-orbital-text-muted">Trigger Type</label>
                 <div className="flex items-center gap-1 mt-1 text-sm">
                   <TriggerIcon size={14} /> <span className="capitalize">{suggestion.triggerType}</span>
@@ -167,8 +188,14 @@ export function SuggestionDetailPage() {
               </div>
               <div>
                 <label className="text-xs text-orbital-text-muted">Action Type</label>
-                <div className="mt-1"><Badge color={suggestion.actionType === 'tour' ? 'violet' : suggestion.actionType === 'nudge' ? 'blue' : 'amber'}>{suggestion.actionType}</Badge></div>
+                <div className="mt-1"><Badge color={suggestion.actionType === 'tour' ? 'blue' : suggestion.actionType === 'nudge' ? 'amber' : 'violet'}>{suggestion.actionType}</Badge></div>
               </div>
+              {suggestion.actionSubType && (
+                <div>
+                  <label className="text-xs text-orbital-text-muted">Kind</label>
+                  <div className="mt-1"><SubTypeBadge subType={suggestion.actionSubType} /></div>
+                </div>
+              )}
               <div>
                 <label className="text-xs text-orbital-text-muted">Target Segment</label>
                 <Input className="mt-1" defaultValue={suggestion.segment} />

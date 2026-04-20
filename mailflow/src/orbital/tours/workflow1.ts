@@ -5,15 +5,8 @@ export const workflow1Steps: TourStep[] = [
     id: 'w1-welcome',
     targetId: 'dashboard-quickstart-create',
     message:
-      "Looks like you're setting up your first campaign. I'll walk you through it — it only takes a few minutes.",
-    ctaLabel: "Let's go",
-  },
-  {
-    id: 'w1-campaigns-list',
-    targetId: 'campaigns-list-create-btn',
-    route: '/campaigns',
-    message: "Here's where all your campaigns live. Click **Create campaign** to begin.",
-    ctaLabel: 'Got it',
+      "Looks like you're setting up your first campaign. Click **Create a campaign** to begin and I'll guide you step by step.",
+    ctaLabel: 'Create campaign',
     waitForEvent: 'route:prefix:/campaigns/new',
   },
   {

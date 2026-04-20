@@ -4,7 +4,7 @@ import { generateSegments } from '../mock/segments';
 import { generateNotifications } from '../mock/notifications';
 import { daysAgo } from '../lib/dates';
 
-export type ScenarioId = 'maya' | 'devon';
+export type ScenarioId = 'maya' | 'devon' | 'riley';
 
 export interface DemoScenario {
   id: ScenarioId;
@@ -125,6 +125,70 @@ export const scenarios: Record<ScenarioId, DemoScenario> = {
           clicks: 43,
           bounces: 3,
           unsubscribes: 2,
+        },
+      },
+    ],
+    contacts: allContacts,
+    contactsUploaded: true,
+    segments: generateSegments(allContacts.length),
+    automations: [],
+    notifications: generateNotifications(),
+    checkoutInitiated: false,
+    checkoutAbandoned: false,
+  },
+
+  riley: {
+    id: 'riley',
+    label: 'Scenario 3: Riley — Question-Led Guidance',
+    persona: 'Ops Manager · Pro Plan',
+    description:
+      'Experienced user asks a specific workflow question. Orbital converts that question into a contextual, generated tour using UI annotations.',
+    startRoute: '/audiences?tab=segments',
+    user: {
+      id: 'user-9',
+      name: 'Riley Morgan',
+      email: 'riley@mailflow.demo',
+      role: 'owner',
+      plan: 'pro',
+    },
+    plan: 'pro',
+    campaigns: [
+      {
+        id: 'camp-r1',
+        name: 'June Product Roundup',
+        status: 'sent',
+        audienceId: 'segment-all',
+        templateId: 'tpl-3',
+        fromName: 'Riley from Northstar',
+        fromEmail: 'riley@mailflow.demo',
+        subject: 'What shipped in June',
+        sentAt: daysAgo(6),
+        stats: {
+          recipients: 1240,
+          delivered: 1228,
+          opens: 401,
+          clicks: 79,
+          bounces: 12,
+          unsubscribes: 3,
+        },
+      },
+      {
+        id: 'camp-r2',
+        name: 'Feature Highlight',
+        status: 'sent',
+        audienceId: 'segment-engaged',
+        templateId: 'tpl-1',
+        fromName: 'Riley from Northstar',
+        fromEmail: 'riley@mailflow.demo',
+        subject: 'A quick look at our newest feature',
+        sentAt: daysAgo(2),
+        stats: {
+          recipients: 520,
+          delivered: 516,
+          opens: 246,
+          clicks: 61,
+          bounces: 4,
+          unsubscribes: 1,
         },
       },
     ],

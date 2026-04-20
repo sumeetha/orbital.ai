@@ -9,7 +9,7 @@
 
 ## 1. Product Overview
 
-Orbital AI is a platform that helps Growth and Product teams set up intelligent, adaptive in-product guidance — tours, nudges, tooltips — without writing code. Instead of static walkthroughs, Orbital uses an AI agent that learns the host product's UI structure, understands business goals, and dynamically generates context-aware guidance for end-users.
+Orbital AI is a platform that helps Growth and Product teams set up intelligent, adaptive in-product engagements — tours, nudges, and feedback — without writing code. Instead of static walkthroughs, Orbital uses an AI agent that learns the host product's UI structure, understands business goals, and dynamically generates context-aware guidance for end-users.
 
 This prototype covers the **admin experience**: the dashboard a Growth PM uses to teach the agent about their product and configure how it guides end-users.
 
@@ -36,7 +36,7 @@ See Section 10.
 | Build tool | **Vite** | Same as MailFlow prototype; fast dev server |
 | Framework | **React 18** + **TypeScript** | Consistent with the existing codebase |
 | Styling | **Tailwind CSS** | Rapid iteration, consistent with MailFlow |
-| Routing | **React Router v6** | Client-side routing for ~9 screens |
+| Routing | **React Router v6** | Client-side routing for ~17 screens |
 | State | **Zustand** | Lightweight; state flows across journeys |
 | Tree visualization | **Custom React component** or **react-d3-tree** | For the semantic map |
 | Icons | **lucide-react** | Consistent with MailFlow |
@@ -60,6 +60,10 @@ orbital-admin/
       annotation/               # Journey 1: browser simulation + live semantic map
       instructions/             # Journey 2: conversational goal/metric setup
       drafts/                   # Journey 3: AI-generated tour/nudge drafts
+      engagements/              # Active tours, nudges, and feedback
+      insights/                 # Analytics dashboard with KPIs and risk signals
+      branding/                 # Brand theme configuration for UI engagements
+      settings/                 # Team management and billing
     store/                      # Zustand slices
     mock/                       # All scripted data (see Section 6)
     lib/                        # Helpers, formatters
@@ -77,17 +81,36 @@ orbital-admin/
 ### Global chrome
 
 - **Left sidebar (persistent, dark):**
-  - Orbital logo (wordmark)
+  - Orbital logo (custom orbital SVG icon — two crossed elliptical rings around a center dot, matching the favicon)
   - Nav items:
     - **Dashboard** (top-level)
-    - **Copilot** (collapsible section with sub-menus):
+    - **Argus Copilot** (collapsible section with sub-menus):
       - Knowledge Base
       - Integrations
       - Annotations
       - Instructions
       - Drafts
-  - Each nav item shows a completion indicator (empty circle / checkmark / in-progress dot)
-  - The Copilot section auto-expands when active; sub-items indent under the parent
+    - **Engagements** (collapsible section with sub-menus):
+      - All Engagements
+      - Tours
+      - Nudges
+      - Feedback
+    - **Insights** (top-level)
+    - **Branding** (top-level)
+    - **Settings** (collapsible section with sub-menus):
+      - Team
+      - Billing
+  - Argus Copilot sub-items show completion indicators (empty circle / checkmark / in-progress dot)
+  - Collapsible sections auto-expand when any child route is active; sub-items indent under the parent with a left border
+  - **Ask Argus chat bubble** — a floating conversational AI assistant:
+    - Trigger: "Ask Argus" pill button (Bot icon + label) fixed to the bottom-right corner of the viewport
+    - Clicking opens a 400×540px chat panel with a branded header, welcome state with suggested prompts, and a message input
+    - Welcome state: Bot icon, "Hi! I'm Argus." greeting, description text, and 3 clickable suggestion buttons
+    - Chat messages: user messages in purple bubbles (right-aligned), assistant responses in grey (left-aligned)
+    - Typing indicator with animated bouncing dots during simulated response delay (0.8–1.4s)
+    - Mock responses match on keywords (tours, annotations, engagement best practices) for demo purposes
+    - Panel opens/closes with spring animation (framer-motion)
+    - Available on every page
   - Footer: workspace name ("MailFlow"), user avatar + name ("Sarah Kim, Growth PM")
 
 - **Top bar (persistent):**
@@ -100,12 +123,21 @@ orbital-admin/
 | Path | Screen | Sidebar Location | Journey |
 |------|--------|------------------|---------|
 | `/` | Dashboard | Dashboard | — |
-| `/knowledge` | Knowledge Base | Copilot → Knowledge Base | Journey 0 |
-| `/integrations` | Integrations | Copilot → Integrations | — |
-| `/annotate` | Annotations | Copilot → Annotations | Journey 1 |
-| `/setup` | Instructions | Copilot → Instructions | Journey 2 |
-| `/suggestions` | Drafts | Copilot → Drafts | Journey 3 |
-| `/suggestions/:id` | Draft Detail / Edit | Copilot → Drafts | Journey 3 |
+| `/knowledge` | Knowledge Base | Argus Copilot → Knowledge Base | Journey 0 |
+| `/integrations` | Integrations | Argus Copilot → Integrations | — |
+| `/annotate` | Annotations | Argus Copilot → Annotations | Journey 1 |
+| `/setup` | Instructions | Argus Copilot → Instructions | Journey 2 |
+| `/suggestions` | Drafts | Argus Copilot → Drafts | Journey 3 |
+| `/suggestions/:id` | Draft Detail / Edit | Argus Copilot → Drafts | Journey 3 |
+| `/engagements` | All Engagements | Engagements → All Engagements | — |
+| `/engagements/tours` | Tours | Engagements → Tours | — |
+| `/engagements/nudges` | Nudges | Engagements → Nudges | — |
+| `/engagements/feedback` | Feedback | Engagements → Feedback | — |
+| `/insights` | Insights | Insights | — |
+| `/branding` | Branding | Branding | — |
+| `/settings` | *(redirects to Team)* | Settings | — |
+| `/settings/team` | Team | Settings → Team | — |
+| `/settings/billing` | Billing | Settings → Billing | — |
 
 ---
 
@@ -182,12 +214,12 @@ orbital-admin/
 
 ### 4.3 Integrations — `/integrations`
 
-- **Purpose:** PM connects external tools — MCP servers, CRMs, and product analytics platforms — so the copilot can pull live context about users and product usage.
+- **Purpose:** PM connects external tools — MCP servers, CRMs, and product analytics platforms — so Argus can pull live context about users and product usage.
 - **Key UI:**
 
   **Header area**
   - Page title: "Integrations"
-  - Subtitle: *"Connect your tools so the copilot can use real context when generating guidance."*
+  - Subtitle: *"Connect your tools so Argus can use real context when generating guidance."*
 
   **Integration Categories (tab bar or segmented filter):**
   - **All** | **MCP Servers** | **CRM** | **Product Analytics**
@@ -222,7 +254,7 @@ orbital-admin/
   **Connected integrations panel (appears when ≥1 connected):**
   - Lists connected integrations with last-sync timestamp (mock)
   - "Disconnect" link on each
-  - Summary: "2 integrations connected — the copilot will use this context when generating drafts."
+  - Summary: "2 integrations connected — Argus will use this context when generating drafts."
 
 - **Orbital anchors:** `integrations-category-tabs`, `integrations-grid`, `integrations-connect-modal`, `integrations-connected-panel`
 
@@ -297,7 +329,7 @@ orbital-admin/
 
 ### 4.5 Instructions — `/setup` — Journey 2
 
-- **Purpose:** PM defines product goals, activation points, trial structure, key metrics, and friction points via a conversational flow. These serve as instructions for the copilot when generating drafts. Answers are pre-filled from Journey 0 docs where possible.
+- **Purpose:** PM defines product goals, activation points, trial structure, key metrics, and friction points via a conversational flow. These serve as instructions for Argus when generating drafts. Answers are pre-filled from Journey 0 docs where possible.
 - **Layout:** Left sidebar (topics) + main chat area.
 
 #### Left Sidebar — Topic Progress
@@ -392,7 +424,7 @@ A scrolling chat thread. The agent (Orbital avatar + name) sends messages; the P
 
 ### 4.6 Drafts — `/suggestions` — Journey 3
 
-- **Purpose:** The copilot synthesizes knowledge from Journeys 0–2 and presents auto-generated tour/nudge drafts with triggers, rate limits, and step previews.
+- **Purpose:** Argus synthesizes knowledge from Journeys 0–2 and presents auto-generated engagement drafts (tours, nudges, feedback) with triggers, rate limits, and step previews.
 - **Layout:** Full-width card list with a global settings panel at top.
 
 #### Global Rate Limits Card (top of page)
@@ -420,23 +452,23 @@ A distinct card (subtle border, settings icon) showing AI-proposed rate limits:
 
 #### Drafts List
 
-Header: *"Based on your product goals, UI structure, and documentation, here are 9 recommended tours and nudges:"*
+Header: *"Based on your product goals, UI structure, and documentation, Argus recommends 12 engagements:"*
 
 Each draft is an **expandable card** with:
-- **Status badge**: "Draft" (blue) / "Accepted" (green) / "Dismissed" (grey)
 - **Title**: e.g., "First Campaign Activation Tour"
 - **Trigger type icon + label**: State (flag) / Behavioral (cursor) / Metric (chart)
 - **Trigger condition** (one-line summary): e.g., "New free user, no campaign sent in 48h"
-- **Action type badge**: Tour / Nudge / Tooltip
+- **Action type badge**: Tour (blue) / Nudge (amber) / Feedback (violet)
+- **Kind badge** (subtype pill with icon): e.g., Spotlight, Banner, Micro Survey, NPS — only shown for nudges and feedback
 - **Target segment**: e.g., "Free plan, first 7 days"
-- **Actions row**: "Preview" | "Edit" | "Accept" | "Dismiss"
+- **Actions row**: "Details" | "Edit" | "Accept" | "Dismiss"
 
 Expanding a card reveals:
-- **Rationale**: Why the copilot drafted this (references specific goals/metrics/annotation data)
+- **Rationale**: Why Argus drafted this (references specific goals/metrics/annotation data)
 - **Tour steps preview**: Numbered list of steps with element names and messages
 - **Trigger details**: Full condition breakdown
 
-#### Mock Drafts (9 total)
+#### Mock Drafts (12 total)
 
 **State-based triggers:**
 
@@ -450,7 +482,7 @@ Expanding a card reveals:
 2. **Import Contacts Reminder**
    - Trigger: `campaigns_sent >= 1 AND contact_count < 10`
    - Segment: All users with few contacts
-   - Action: Proactive nudge
+   - Action: Nudge → Spotlight
    - Message: "Your campaigns will have more impact with a larger audience. Import your contacts in under a minute."
    - Rationale: *"Users with fewer than 10 contacts see limited campaign value. This nudge surfaces the import flow you annotated."*
 
@@ -459,54 +491,77 @@ Expanding a card reveals:
 3. **Audience Selection Rescue**
    - Trigger: Rage clicks on audience dropdown (3+ clicks within 5s without progressing)
    - Segment: Any user in campaign wizard, step 2
-   - Action: Contextual tooltip
+   - Action: Nudge → Spotlight
    - Message: "Not sure who to send to? Start with 'All Contacts' for your first campaign."
-   - Rationale: *"You flagged audience selection as a friction risk during annotation. This tooltip fires when a user shows signs of confusion."*
+   - Rationale: *"You flagged audience selection as a friction risk during annotation. This spotlight fires when a user shows signs of confusion."*
 
 4. **Template Decision Paralysis Help**
    - Trigger: 30s+ on template gallery without selecting (dead engagement)
    - Segment: Users on wizard step 1
-   - Action: Proactive nudge
+   - Action: Nudge → Popup
    - Message: "Newsletter templates work great for a first send. Want me to recommend one?"
-   - Rationale: *"Your docs mention template choice can overwhelm new users. This nudge intervenes when scrolling behavior suggests indecision."*
+   - Rationale: *"Your docs mention template choice can overwhelm new users. This popup intervenes when scrolling behavior suggests indecision."*
 
 5. **Wizard Abandonment Recovery**
    - Trigger: Exit intent — user navigates away from campaign wizard mid-flow (step 2 or 3)
    - Segment: Users who started but didn't complete a campaign
-   - Action: Chat bubble on next login
+   - Action: Nudge → Banner
    - Message: "You were halfway through creating a campaign. Want to pick up where you left off?"
    - Rationale: *"You defined 'campaign wizard abandoned mid-flow' as a risk metric. This recovers users who left before sending."*
 
 6. **Settings Page Confusion Rescue**
    - Trigger: Scroll thrashing on settings page (rapid up/down scrolling 3+ times within 10s)
    - Segment: Any user on `/settings`
-   - Action: Contextual tooltip
+   - Action: Nudge → Spotlight
    - Message: "Looking for something specific? Billing is under the 'Billing' tab, team invites are under 'Team'."
    - Rationale: *"Settings pages with multiple tabs often cause disorientation. This fires when scroll behavior suggests the user can't find what they need."*
 
 **Metric-based triggers:**
 
-7. **Automation Discovery Nudge**
+7. **Automation Discovery Tour**
    - Trigger: `campaigns_sent >= 3 AND automations_created == 0 AND trial_day >= 7`
    - Segment: Pro trial users, day 7+
-   - Action: Proactive chat bubble + 5-step tour
+   - Action: Tour (6-step guided tour)
    - Message: "You're getting great engagement on your campaigns. Want to automate follow-ups for people who didn't open?"
    - Tour steps: Dashboard → Automations sidebar link → Create Automation → Trigger selection → Follow-up email step → Completion
    - Rationale: *"You defined 'no automation by day 7' as a conversion risk. Automations are a paid feature — discovering them increases upgrade likelihood."*
 
-8. **Trial Expiry Conversion Nudge**
+8. **Trial Expiry Conversion Banner**
    - Trigger: `trial_days_remaining <= 3 AND has_used_paid_feature == true`
    - Segment: Trial users nearing expiry
-   - Action: Proactive nudge
+   - Action: Nudge → Banner
    - Message: "You've been using automations and A/B testing — upgrading ensures they keep running after your trial ends."
    - Rationale: *"Tied to your 'trial expiring without upgrade' risk metric. Only shown to users who've engaged with paid features, so the message is relevant."*
 
 9. **Engagement Drop-off Alert**
    - Trigger: `open_rate_7d < 15%`
    - Segment: Users with at least 3 sent campaigns
-   - Action: Tooltip on analytics page
+   - Action: Nudge → Modal
    - Message: "Your open rates dipped this week. Want tips on improving subject lines and send times?"
    - Rationale: *"Linked to your 'low open rates' risk metric. Surfaces guidance before the user gets discouraged by declining performance."*
+
+**Feedback drafts:**
+
+10. **Post-Onboarding Satisfaction Check**
+    - Trigger: `onboarding_complete == true AND campaigns_sent >= 1`
+    - Segment: All new users, post-onboarding
+    - Action: Feedback → Micro Survey
+    - Message: "How was your onboarding experience? (1-5 scale)"
+    - Rationale: *"Gathering quick feedback immediately after onboarding helps identify friction points while the experience is fresh. Micro survey format keeps response rates high."*
+
+11. **Monthly NPS Collection**
+    - Trigger: `days_since_last_nps >= 30 AND sessions_last_7d >= 2`
+    - Segment: All active users
+    - Action: Feedback → NPS
+    - Message: "How likely are you to recommend MailFlow to a colleague? (0-10)"
+    - Rationale: *"Regular NPS tracking provides a health score for your user base. Only shown to active users to ensure meaningful responses."*
+
+12. **Template Usefulness Rating**
+    - Trigger: `campaign_sent_with_template == true`
+    - Segment: Users who used templates
+    - Action: Feedback → Like/Dislike
+    - Message: "Was this template helpful?"
+    - Rationale: *"A quick like/dislike after template use helps surface which templates drive value and which need improvement. Minimal friction ensures high response rate."*
 
 ---
 
@@ -517,7 +572,7 @@ Expanding a card reveals:
 
   **Header:**
   - Draft title (editable)
-  - Status badge + toggle (Accept / Dismiss)
+  - Accept / Dismiss action buttons
   - "Preview Tour" button
   - "Back to Drafts" breadcrumb
 
@@ -565,6 +620,152 @@ Expanding a card reveals:
     - Tooltip card with Orbital avatar, step message, step counter (1/7), Next/Back buttons
   - PM clicks "Next" to advance through steps manually
   - "Close Preview" button returns to the draft detail or list
+
+---
+
+### 4.9 Engagements — `/engagements`
+
+- **Purpose:** Lists all active guidance engagements — tours, nudges, and feedback — that are live or paused. This is the operational view of what end-users actually see.
+- **Key UI:**
+
+  **Summary Cards Row (4 cards):**
+  - Total Engagements count
+  - Active count (green)
+  - Tours + Nudges breakdown with badges
+  - Feedback count with badge
+
+  **Filter Tabs:**
+  - All | Tours | Nudges | Feedback
+  - Selected tab filters the table below
+
+  **Engagements Table:**
+  - Columns: Name, Type (badge: Tour/Nudge/Feedback), Kind (subtype pill: e.g., Spotlight, NPS, Banner), Status (badge: Active/Paused/Draft), Segment, Last Triggered, Conversion Rate
+  - Kind column shows a color-coded pill with icon for the subtype (only for nudges and feedback; tours have no subtype)
+  - Action buttons per row: Pause/Resume toggle, Archive (delete)
+  - Empty state with CTA linking to Drafts page
+
+  **Engagement types and subtypes:**
+
+  | Type | Subtypes |
+  |------|----------|
+  | Tour | *(none)* |
+  | Nudge | Spotlight, Checklist, Banner, Popup, Modal |
+  | Feedback | Micro Survey, NPS, Like/Dislike, Star Rating, Large Survey |
+
+  **Sub-pages:**
+  - `/engagements/tours` — filtered view showing only tours
+  - `/engagements/nudges` — filtered view showing only nudges
+  - `/engagements/feedback` — filtered view showing only feedback
+  - All three share the same `EngagementsPage` component with a `filterType` prop
+
+  **Mock data (13 engagements):**
+  - 2 tours: First Campaign Activation Tour, Automation Discovery Tour
+  - 6 nudges: 2 spotlights, 1 checklist, 1 banner, 1 popup, 1 modal
+  - 5 feedback: 1 micro survey, 1 NPS, 1 like/dislike, 1 star rating, 1 large survey
+  - Each has mock impressions, completions, dismissals, and conversion rate
+
+- **Orbital anchors:** `engagements-summary`, `engagements-filter-tabs`, `engagements-table`
+
+---
+
+### 4.10 Insights — `/insights`
+
+- **Purpose:** Analytics dashboard showing key metrics tied to the goals and risk signals the PM defined in the Argus Copilot Instructions step.
+- **Key UI:**
+
+  **KPI Cards Row (4 cards):**
+  - Activation Rate (34.2%, +5.3% vs last week)
+  - Trial Conversion (18.7%, +2.1%)
+  - Avg Time to Aha Moment (2.3 days, -0.4 days — lower is better)
+  - Engagement Reach (72.4%, +8.6%)
+  - Each card shows a 7-day trend sparkline (SVG polyline) and a change indicator with TrendingUp/TrendingDown icon
+
+  **Risk Signals Panel:**
+  - Grid of cards, one per risk metric from `setupAnswers.riskMetrics`
+  - Each shows: signal label, severity badge (High/Medium/Low), affected user count, one-line description
+  - Mock signals: "No campaign sent in 3+ days" (42 users, high), "Trial expiring without upgrade" (18 users, high), "Low open rates" (27 users, medium), "No automation by day 7" (35 users, medium), "Campaign wizard abandoned" (14 users, low), "Visited pricing but didn't upgrade" (23 users, low)
+
+  **Engagement Performance Table:**
+  - Columns: Engagement name, Type badge, Impressions, Completions, Dismissals, Conversion Lift
+  - Shows performance data for each active engagement
+
+- **Orbital anchors:** `insights-kpi-cards`, `insights-risk-signals`, `insights-performance-table`
+
+---
+
+### 4.11 Branding — `/branding`
+
+- **Purpose:** Configures the visual theme applied to all user-facing UI engagements (tours, nudges, and feedback).
+- **Layout:** 60/40 split — left has import + settings form, right has live preview.
+
+  **Import Brand Panel (Card):**
+  - **Upload Style Guide:** Drag-and-drop zone (PDF, PNG, SVG). Simulated upload marks as "uploaded" and triggers auto-detection.
+  - **Reference URL:** Text input + fetch button. After 1.5s simulated extraction, shows "Brand tokens auto-detected" with a checkmark.
+  - Both methods populate the Brand Settings form with auto-detected values.
+
+  **Brand Settings Form (Card):**
+  - **Primary Color** — color picker + hex input (default: `#7c5cfc`)
+  - **Secondary Color** — color picker + hex input (default: `#3b82f6`)
+  - **Font Family** — dropdown: Inter, System Default, Roboto, Open Sans, DM Sans
+  - **Border Radius** — range slider 0–16px with live value label
+  - **Button Style** — radio/toggle: Filled, Outlined, Rounded Pill
+  - **Logo** — file upload with real `FileReader` preview. Shows uploaded image thumbnail, Replace and Remove buttons after upload.
+
+  **Live Preview Panel (sticky, right side):**
+  - Simulated browser chrome (traffic light dots + URL bar)
+  - Mock tooltip card styled with current brand settings (colors, font, radius, button style, logo)
+  - Mock nudge card styled with current brand settings (secondary color accent border)
+  - Updates in real-time as settings change
+
+  **Auto-detected brand tokens (from URL fetch or style guide upload):**
+  - Primary: `#6366f1`, Secondary: `#8b5cf6`, Font: DM Sans, Radius: 12px, Button style: Rounded Pill
+
+- **Orbital anchors:** `branding-import-panel`, `branding-settings-form`, `branding-preview`
+
+---
+
+### 4.12 Settings — Team (`/settings/team`)
+
+- **Purpose:** Manage team members and their access levels.
+- **Key UI:**
+
+  **Team Members Table:**
+  - Columns: Member (avatar initials + name + email), Role (badge: Admin/Editor/Viewer), Status (badge: Active/Invited), Last Active, Actions
+  - Actions menu (three-dot dropdown): Set as Admin, Set as Editor, Set as Viewer, Remove
+  - Current role is highlighted in the dropdown
+
+  **Invite Teammate Modal:**
+  - Email input + role selector (three toggle buttons: Admin / Editor / Viewer)
+  - Send Invite button → adds member to list with "Invited" status
+
+  **Mock team members (4):**
+  - Sarah Kim (Admin, active), James Chen (Editor, active), Priya Patel (Editor, active), Alex Rivera (Viewer, invited)
+
+- **Orbital anchors:** `settings-team-table`, `settings-invite-modal`
+
+---
+
+### 4.13 Settings — Billing (`/settings/billing`)
+
+- **Purpose:** Manage subscription plan and view billing history.
+- **Key UI:**
+
+  **Current Plan Card:**
+  - Plan name + Active badge, monthly price, seats used/total, engagements active/limit
+  - Payment method display (mock Visa ending in 4242) with Update link
+  - Change Plan button
+
+  **Plan Comparison Grid (3 cards):**
+  - Free ($0/mo): 1 seat, 3 engagements, basic analytics, email support
+  - Pro ($99/mo, current): 5 seats, 25 engagements, advanced analytics, priority support, custom branding, API access
+  - Enterprise (Custom): unlimited seats/engagements, full analytics, dedicated CSM, SSO, SLA
+  - Current plan card has a ring highlight; others show Upgrade/Downgrade/Contact Sales buttons
+
+  **Billing History Table:**
+  - Columns: Date, Description, Amount, Status (badge: Paid/Pending/Failed)
+  - 5 mock entries (monthly Pro Plan charges, all paid)
+
+- **Orbital anchors:** `settings-billing-plan`, `settings-billing-comparison`, `settings-billing-history`
 
 ---
 
@@ -708,7 +909,8 @@ type Draft = {
   triggerType: 'state' | 'behavioral' | 'metric';
   triggers: TriggerCondition[];
   segment: string;
-  actionType: 'tour' | 'nudge' | 'tooltip';
+  actionType: 'tour' | 'nudge' | 'feedback';
+  actionSubType?: EngagementSubType;  // from engagements.ts
   steps: DraftStep[];
   rationale: string;
   priority: number;
@@ -722,6 +924,116 @@ type RateLimits = {
   maxTooltipsOnScreen: number;
   permanentSuppressAfterDismissals: number;
   priorityOrder: ('behavioral' | 'metric' | 'state')[];
+};
+```
+
+### `src/mock/engagements.ts`
+
+```ts
+type EngagementType = 'tour' | 'nudge' | 'feedback';
+type EngagementStatus = 'active' | 'paused' | 'draft';
+
+type FeedbackSubType = 'micro-survey' | 'nps' | 'like-dislike' | 'star-rating' | 'large-survey';
+type NudgeSubType = 'spotlight' | 'checklist' | 'banner' | 'popup' | 'modal';
+type EngagementSubType = FeedbackSubType | NudgeSubType;
+
+type Engagement = {
+  id: string;
+  name: string;
+  type: EngagementType;
+  subType?: EngagementSubType;
+  status: EngagementStatus;
+  triggerSummary: string;
+  segment: string;
+  lastTriggered: string;
+  impressions: number;
+  completions: number;
+  dismissals: number;
+  conversionRate: number;
+  linkedDraftId: string | null;
+};
+```
+
+### `src/mock/insights.ts`
+
+```ts
+type KpiMetric = {
+  id: string;
+  label: string;
+  value: string;
+  change: number;      // percentage vs last week
+  trend: number[];     // 7 data points for sparkline
+};
+
+type RiskSignal = {
+  id: string;
+  label: string;
+  userCount: number;
+  severity: 'high' | 'medium' | 'low';
+  description: string;
+};
+
+type EngagementPerformance = {
+  engagementId: string;
+  name: string;
+  type: 'tour' | 'nudge' | 'feedback';
+  impressions: number;
+  completions: number;
+  dismissals: number;
+  conversionLift: number;
+};
+```
+
+### `src/mock/branding.ts`
+
+```ts
+type ButtonStyle = 'filled' | 'outlined' | 'rounded-pill';
+
+type BrandSettings = {
+  primaryColor: string;
+  secondaryColor: string;
+  fontFamily: string;
+  borderRadius: number;
+  logoUrl: string | null;
+  buttonStyle: ButtonStyle;
+};
+```
+
+### `src/mock/settings.ts`
+
+```ts
+type TeamRole = 'admin' | 'editor' | 'viewer';
+type MemberStatus = 'active' | 'invited';
+
+type TeamMember = {
+  id: string;
+  name: string;
+  email: string;
+  role: TeamRole;
+  status: MemberStatus;
+  lastActive: string;
+  avatarInitials: string;
+};
+
+type BillingPlan = 'free' | 'pro' | 'enterprise';
+
+type BillingHistory = {
+  id: string;
+  date: string;
+  description: string;
+  amount: string;
+  status: 'paid' | 'pending' | 'failed';
+};
+
+type BillingInfo = {
+  currentPlan: BillingPlan;
+  monthlyPrice: string;
+  seatsUsed: number;
+  seatsTotal: number;
+  engagementsActive: number;
+  engagementsLimit: number;
+  paymentMethod: string;
+  billingHistory: BillingHistory[];
 };
 ```
 
@@ -757,8 +1069,11 @@ type SetupAnswers = {
 | `annotationSlice` | `capturedElements: CapturedElement[]`, `activePage: string`, `mapNodes: MapNode[]` | `captureElement(hotspotId)`, `updateDescription(id, text)`, `addTag(id, tag)`, `removeTag(id, tag)`, `setActivePage(page)` |
 | `integrationsSlice` | `integrations: Integration[]`, `connectedCount: number` | `connectIntegration(id)`, `disconnectIntegration(id)`, `testConnection(id)` |
 | `instructionsSlice` | `answers: SetupAnswers`, `currentTopic: number`, `completedTopics: number[]` | `confirmTopic(topic, data)`, `updateAnswer(field, value)`, `goToTopic(index)` |
-| `draftsSlice` | `drafts: Draft[]`, `rateLimits: RateLimits`, `isGenerating: boolean` | `acceptDraft(id)`, `dismissDraft(id)`, `updateDraft(id, data)`, `updateRateLimits(limits)`, `generateDrafts()` |
-| `uiSlice` | `sidebarCollapsed: boolean`, `copilotExpanded: boolean`, `currentJourney: number`, `previewOpen: boolean`, `previewDraftId: string | null` | `toggleSidebar()`, `toggleCopilotSection()`, `setJourney(n)`, `openPreview(id)`, `closePreview()` |
+| `draftsSlice` | `drafts: Draft[]` (12 total: tours, nudges, feedback with subtypes), `rateLimits: RateLimits`, `isGenerating: boolean` | `acceptDraft(id)`, `dismissDraft(id)`, `updateDraft(id, data)`, `updateRateLimits(limits)`, `generateDrafts()` |
+| `engagementsSlice` | `engagements: Engagement[]` | `pauseEngagement(id)`, `resumeEngagement(id)`, `archiveEngagement(id)` |
+| `brandingSlice` | `brandSettings: BrandSettings`, `styleGuideUrl: string`, `isExtracting: boolean` | `updateBrandSetting(field, value)`, `fetchBrandFromUrl(url)` |
+| `settingsSlice` | `teamMembers: TeamMember[]`, `billingInfo: BillingInfo` | `inviteMember(email, role)`, `updateMemberRole(id, role)`, `removeMember(id)` |
+| `uiSlice` | `sidebarCollapsed: boolean`, `argusExpanded: boolean`, `currentJourney: number`, `previewOpen: boolean`, `previewDraftId: string | null`, `askArgusOpen: boolean` | `toggleSidebar()`, `toggleArgusSection()`, `setJourney(n)`, `openPreview(id)`, `closePreview()`, `toggleAskArgus()` |
 
 ### Cross-slice data flow
 
@@ -768,9 +1083,13 @@ flowchart LR
     Annotation["annotationSlice (map)"] --> Instructions
     Annotation --> Drafts["draftsSlice (element targets)"]
     Instructions --> Drafts
+    Instructions --> Insights["insightsSlice (risk signals from metrics)"]
     Knowledge --> Drafts
     Integrations["integrationsSlice (context)"] --> Drafts
+    Drafts --> Engagements["engagementsSlice (accepted drafts)"]
+    Engagements --> Insights
     Drafts --> UI["uiSlice (preview, dashboard)"]
+    Branding["brandingSlice (theme)"] --> Engagements
 ```
 
 ---
@@ -801,7 +1120,7 @@ flowchart LR
 
 ### Components to build
 
-`Button` (primary, secondary, ghost, danger), `IconButton`, `Input`, `Textarea`, `Select`, `Chip` (removable, editable), `Card` (expandable), `Modal`, `Tooltip`, `Badge` (status, trigger-type), `Tabs`, `Tree` (animated node insertion), `ChatBubble` (agent / user / prefill-card), `QuickReplyChips`, `ProgressStepper`, `DragHandle`, `EditableText` (inline edit on click), `SplitPane`, `BrowserFrame`, `HotspotOverlay`, `TourSpotlight`, `ProcessingSpinner`, `TypingAnimation`.
+`Button` (primary, secondary, ghost, danger), `IconButton`, `Input`, `Textarea`, `Select`, `Chip` (removable, editable), `Card` (expandable), `Modal`, `Tooltip`, `Badge` (status, trigger-type), `Tabs`, `Tree` (animated node insertion), `ChatBubble` (agent / user / prefill-card), `QuickReplyChips`, `ProgressStepper`, `DragHandle`, `EditableText` (inline edit on click), `SplitPane`, `BrowserFrame`, `HotspotOverlay`, `TourSpotlight`, `ProcessingSpinner`, `TypingAnimation`, `AskArgus` (floating chat bubble with conversational AI assistant panel).
 
 ### Trigger type visual language
 
@@ -853,13 +1172,51 @@ flowchart LR
 ### Journey 3 — Drafts
 - Page loads with a 3s "generating" animation (pulsing dots + rotating messages: "Analyzing your product structure…", "Matching goals to UI elements…", "Generating recommendations…")
 - Draft cards animate in one by one (200ms stagger)
+- Each card shows: title, trigger type badge, action type badge (Tour/Nudge/Feedback), subtype kind pill (e.g., Spotlight, NPS), trigger summary, segment
+- No status badges on cards — status is managed through Accept/Dismiss actions and the dismissed section
 - Expand/collapse cards with smooth height transition
-- "Accept" moves status to accepted (green badge), card stays in list
-- "Dismiss" greys out the card, moves it to bottom of list, "Undo" link appears for 5s
-- "Preview" opens the tour preview modal
+- "Accept" keeps card in the active list
+- "Dismiss" greys out the card, moves it to the dismissed section at bottom
+- "Details" toggles the expanded view showing rationale, steps, and trigger conditions
 - "Edit" navigates to `/suggestions/:id` detail page
 - Rate limits card: number inputs with +/- steppers, dropdowns for time units
 - Priority list: drag to reorder (framer-motion drag)
+
+### Engagements
+- Summary cards update counts when engagements are paused/resumed/archived
+- Filter tabs switch the table view instantly
+- Pause/Resume toggles update status badge inline
+- Archive removes the row with a brief fade-out
+- Empty state shows when all engagements are archived, with a CTA to Drafts
+
+### Insights
+- KPI cards display SVG sparklines rendered from 7-day trend arrays
+- Change indicators show green TrendingUp or red TrendingDown icons
+- Risk signal cards are static mock data (no live updates)
+- Engagement performance table is read-only mock data
+
+### Branding
+- Style guide upload uses a native file input; simulated 1.5s processing
+- URL fetch triggers 1.5s spinner then auto-populates brand settings with detected values
+- All brand setting changes update the live preview panel in real-time
+- Logo upload reads file via `FileReader.readAsDataURL()` and displays actual image preview
+- Preview panel shows a mock tooltip and nudge card styled with current settings
+
+### Settings
+- Team: Invite modal validates email is non-empty before enabling the Send button
+- Team: Role dropdown updates the member's role inline
+- Team: Remove action filters the member out of the list
+- Billing: Plan comparison cards highlight the current plan; action buttons are simulated (no real upgrade/downgrade)
+- Billing: History table is static mock data
+
+### Ask Argus (Floating Chat Bubble)
+- "Ask Argus" pill button floats at the bottom-right of the viewport on every page
+- Clicking the button opens the chat panel with a spring animation; the trigger button hides while the panel is open
+- Welcome state shows a Bot icon, greeting, description, and 3 suggestion buttons (clicking a suggestion sends it as a message)
+- User messages appear instantly in purple bubbles (right-aligned); assistant typing indicator (3 bouncing dots) shows for 0.8–1.4s before the response appears in grey bubbles (left-aligned)
+- Mock responses are keyword-matched: "tour" → tour setup guidance, "annotation" → annotation tips, "engagement" / "best practice" → engagement best practices, default → general help
+- Chat auto-scrolls to the latest message; input auto-focuses when panel opens
+- Close button (X) in the header dismisses the panel and restores the floating trigger button
 
 ### Global
 - Sidebar nav items update their completion indicators as journeys progress
@@ -906,7 +1263,7 @@ These can be actual screenshots from the running MailFlow prototype, or simplifi
 
 1. Scaffold Vite + React + TS + Tailwind, install deps (zustand, react-router, framer-motion, lucide-react).
 2. Build the design system: tokens, base components (Button, Card, Input, Chip, Modal, etc.).
-3. Build the app shell: sidebar (with collapsible Copilot section), top bar, routing.
+3. Build the app shell: sidebar (with collapsible sections for Argus Copilot, Engagements, Settings + top-level Insights, Branding), top bar, routing, and the Ask Argus floating chat bubble.
 4. Build the Zustand store with all slices and mock data files.
 5. **Journey 0:** Knowledge Base screen (upload zone, URL input, extracted knowledge panel).
 6. **Integrations:** Integrations screen (integration cards, connect modal, connected panel).
@@ -916,6 +1273,11 @@ These can be actual screenshots from the running MailFlow prototype, or simplifi
 10. **Journey 3 cont.:** Draft detail/edit page (trigger builder, step editor, timing controls).
 11. Tour Preview modal (simulated MailFlow frame + spotlight overlay).
 12. Dashboard (setup checklist, active drafts summary, semantic map thumbnail).
-13. Polish: animations (framer-motion), typing effects, stagger animations, transition polish.
-14. Capture MailFlow screenshots for annotation assets.
-15. End-to-end walkthrough test of all 4 journeys + integrations screen.
+13. **Engagements:** Engagements list (summary cards, filter tabs, table with type + kind columns and pause/resume/archive actions, sub-pages for Tours/Nudges/Feedback).
+14. **Insights:** Insights dashboard (KPI cards with sparklines, risk signals panel, engagement performance table).
+15. **Branding:** Branding page (style guide import, brand settings form, live preview panel with real-time updates).
+16. **Settings — Team:** Team management (member table, invite modal, role management).
+17. **Settings — Billing:** Billing page (current plan card, plan comparison grid, billing history table).
+18. Polish: animations (framer-motion), typing effects, stagger animations, transition polish.
+19. Capture MailFlow screenshots for annotation assets.
+20. End-to-end walkthrough test of all journeys + all admin sections.

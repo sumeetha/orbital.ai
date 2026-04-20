@@ -5,7 +5,7 @@ import { scenarios, type ScenarioId } from './scenarios';
 import { useTour } from '../orbital/TourEngine';
 import { syncBridge } from '../orbital/bridge';
 
-const scenarioList = [scenarios.maya, scenarios.devon];
+const scenarioList = [scenarios.maya, scenarios.devon, scenarios.riley];
 
 export default function ScenarioSwitcher() {
   const navigate = useNavigate();

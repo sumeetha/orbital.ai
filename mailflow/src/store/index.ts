@@ -184,6 +184,7 @@ export const useStore = create<AppState>((set, get) => ({
       plan,
       currentUser: { ...s.currentUser, plan },
       checkoutInitiated: false,
+      trialDaysLeft: undefined,
     })),
 
   // Team

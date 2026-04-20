@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Search,
   Upload,
@@ -24,6 +25,7 @@ import Tabs from '../../components/Tabs';
 import Input from '../../components/Input';
 import EmptyState from '../../components/EmptyState';
 import { ORBITAL_IDS } from '../../orbital/ids';
+import { emitOrbitalEvent } from '../../orbital/bridge';
 import { formatDate } from '../../lib/dates';
 import type { Segment, SegmentRule } from '../../types';
 
@@ -43,6 +45,7 @@ const AVAILABLE_TAGS = [
 ];
 
 export default function AudiencesPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { contacts, segments, importContacts, addContact, addSegment, addToast } = useStore(
     useShallow((s) => ({
       contacts: s.contacts,
@@ -54,7 +57,29 @@ export default function AudiencesPage() {
     })),
   );
 
-  const [activeTab, setActiveTab] = useState('contacts');
+  const initialTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(
+    initialTab === 'segments' || initialTab === 'contacts' ? initialTab : 'contacts'
+  );
+  function handleTabChange(tab: string) {
+    setActiveTab(tab);
+    if (tab === 'segments' || tab === 'contacts') {
+      setSearchParams({ tab });
+    }
+  }
+
+  function openSegmentModal() {
+    setSegmentModalOpen(true);
+    emitOrbitalEvent('segment:modal-open');
+  }
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'segments' || tab === 'contacts') {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
   const [search, setSearch] = useState('');
   const [tagFilter, setTagFilter] = useState('');
   const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
@@ -151,6 +176,7 @@ export default function AudiencesPage() {
       contactCount: previewSegmentCount,
     };
     addSegment(seg);
+    emitOrbitalEvent('segment:created', { segmentId: seg.id });
     addToast('Segment created', 'success');
     setSegmentModalOpen(false);
     setSegmentName('');
@@ -183,7 +209,7 @@ export default function AudiencesPage() {
         </p>
       </div>
 
-      <Tabs tabs={AUDIENCE_TABS} activeTab={activeTab} onChange={setActiveTab} />
+      <Tabs tabs={AUDIENCE_TABS} activeTab={activeTab} onChange={handleTabChange} />
 
       {/* ─── Contacts tab ─── */}
       {activeTab === 'contacts' && (
@@ -347,7 +373,7 @@ export default function AudiencesPage() {
           <div className="flex justify-end">
             <Button
               data-orbital-id={ORBITAL_IDS.audiencesNewSegmentBtn}
-              onClick={() => setSegmentModalOpen(true)}
+              onClick={openSegmentModal}
             >
               <Plus size={16} />
               New segment
@@ -360,7 +386,7 @@ export default function AudiencesPage() {
               title="No segments yet"
               description="Create segments to target specific groups of contacts."
               actionLabel="New segment"
-              onAction={() => setSegmentModalOpen(true)}
+              onAction={openSegmentModal}
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -470,7 +496,12 @@ export default function AudiencesPage() {
       </Modal>
 
       {/* ─── New segment modal ─── */}
-      <Modal open={segmentModalOpen} onClose={() => setSegmentModalOpen(false)} title="New segment">
+      <Modal
+        open={segmentModalOpen}
+        onClose={() => setSegmentModalOpen(false)}
+        title="New segment"
+        data-orbital-id={ORBITAL_IDS.audiencesSegmentModal}
+      >
         <div className="space-y-5">
           <Input
             label="Segment name"
@@ -543,7 +574,11 @@ export default function AudiencesPage() {
             <Button variant="secondary" onClick={() => setSegmentModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddSegment} disabled={!segmentName.trim()}>
+            <Button
+              onClick={handleAddSegment}
+              disabled={!segmentName.trim()}
+              data-orbital-id={ORBITAL_IDS.audiencesCreateSegmentBtn}
+            >
               Create segment
             </Button>
           </div>

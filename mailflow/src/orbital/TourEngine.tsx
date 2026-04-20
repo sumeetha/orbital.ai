@@ -19,6 +19,8 @@ export type TourStep = {
   subMessage?: string;
   ctaLabel?: string;
   waitForEvent?: string;
+  /** Optional delay before auto-advance after waitForEvent is satisfied */
+  advanceDelayMs?: number;
   isModal?: boolean;
   /** Modal presentation; default when omitted */
   modalKind?: 'default' | 'surveyEase' | 'surveyIssue';
@@ -63,6 +65,7 @@ export function getHighlightDotIndex(
 }
 
 export type TourId = 'workflow1' | 'workflow2';
+type ActiveTourId = TourId | 'generated';
 
 const tourById: Record<TourId, TourStep[]> = {
   workflow1: workflow1Steps,
@@ -72,7 +75,7 @@ const tourById: Record<TourId, TourStep[]> = {
 export type SurveyEase = 'easy' | 'difficult' | null;
 
 type TourContextValue = {
-  activeTour: TourId | null;
+  activeTour: ActiveTourId | null;
   steps: TourStep[];
   stepIndex: number;
   isActive: boolean;
@@ -80,6 +83,7 @@ type TourContextValue = {
   surveyEase: SurveyEase;
   setSurveyEase: (v: SurveyEase) => void;
   startTour: (id: TourId) => void;
+  startGeneratedTour: (steps: TourStep[]) => void;
   nextStep: () => void;
   prevStep: () => void;
   endTour: () => void;
@@ -89,17 +93,19 @@ const TourContext = createContext<TourContextValue | null>(null);
 
 export function TourProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
-  const [activeTour, setActiveTour] = useState<TourId | null>(null);
+  const [activeTour, setActiveTour] = useState<ActiveTourId | null>(null);
+  const [generatedSteps, setGeneratedSteps] = useState<TourStep[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
   const [surveyEase, setSurveyEase] = useState<SurveyEase>(null);
   // Track which route-based events we've navigated to
   const navigatedRef = useRef<string | null>(null);
 
-  const steps = activeTour ? tourById[activeTour] : [];
+  const steps = activeTour ? (activeTour === 'generated' ? generatedSteps : tourById[activeTour]) : [];
   const currentStep = steps[stepIndex] ?? null;
 
   const endTour = useCallback(() => {
     setActiveTour(null);
+    setGeneratedSteps([]);
     setStepIndex(0);
     setSurveyEase(null);
     navigatedRef.current = null;
@@ -109,6 +115,19 @@ export function TourProvider({ children }: { children: ReactNode }) {
     (id: TourId) => {
       endTour();
       setActiveTour(id);
+      setGeneratedSteps([]);
+      setStepIndex(0);
+      setSurveyEase(null);
+    },
+    [endTour]
+  );
+
+  const startGeneratedTour = useCallback(
+    (dynamicSteps: TourStep[]) => {
+      if (!dynamicSteps.length) return;
+      endTour();
+      setGeneratedSteps(dynamicSteps);
+      setActiveTour('generated');
       setStepIndex(0);
       setSurveyEase(null);
     },
@@ -144,6 +163,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!currentStep?.waitForEvent) return;
     const eventName = currentStep.waitForEvent;
+    const autoAdvanceDelay = currentStep.advanceDelayMs ?? 800;
 
     // Route-based events:
     //   'route:/campaigns/new'       — exact match
@@ -160,7 +180,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
         const route = p?.route ?? (window as any).__mailflow?.route ?? '';
         const matches = isPrefix ? route.startsWith(targetRoute) : route === targetRoute;
         if (matches) {
-          setTimeout(() => nextStep(), 400);
+          setTimeout(() => nextStep(), autoAdvanceDelay);
         }
       });
       return unsub;
@@ -172,7 +192,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
     const unsub = bridge.on(
       eventName as Parameters<typeof bridge.on>[0],
       () => {
-        setTimeout(() => nextStep(), 800);
+        setTimeout(() => nextStep(), autoAdvanceDelay);
       }
     );
     return unsub;
@@ -189,6 +209,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
         surveyEase,
         setSurveyEase,
         startTour,
+        startGeneratedTour,
         nextStep,
         prevStep,
         endTour,

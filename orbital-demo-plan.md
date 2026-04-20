@@ -74,7 +74,7 @@ Clicking the CTA in the bubble starts the corresponding tour.
 
 ### `scenarios.ts`
 
-Two typed `DemoScenario` objects that describe the full store state to load:
+Three typed `DemoScenario` objects that describe the full store state to load:
 
 **Scenario 1 — Maya (New User Activation)**
 - User: `{ plan: 'free', name: 'Maya Chen' }`
@@ -91,13 +91,20 @@ Two typed `DemoScenario` objects that describe the full store state to load:
 - Starting route: `/`
 - Orbital trigger: immediate proactive bubble on dashboard load
 
+**Scenario 3 — Riley (Question-Led Guidance)**
+- User: `{ plan: 'pro', name: 'Riley Morgan' }`
+- State: existing contacts + sent campaigns; ready to ask workflow questions
+- Starting route: `/audiences?tab=segments`
+- Orbital trigger: chat-led dynamic guidance (generated tour from question)
+- Example question: _"How do I clean inactive contacts and send a re-engagement campaign?"_
+
 ### `ScenarioSwitcher.tsx`
 
 A fixed banner at the **top of the viewport** (above the app shell, `z-index: 9999`):
 
 ```
-[ Orbital.ai Demo ]  [ Scenario 1: Maya — New User ]  [ Scenario 2: Devon — Trial Conversion ]
-                              ← active pill highlighted
+[ Orbital.ai Demo ]  [ Scenario 1: Maya — New User ]  [ Scenario 2: Devon — Trial Conversion ]  [ Scenario 3: Riley — Question-Led Guidance ]
+                                                        ← active pill highlighted
 ```
 
 On click: calls `store.loadScenario(id)` → resets Zustand state to scenario snapshot, resets `TourEngine` state, navigates to scenario's starting route via `useNavigate`.
@@ -137,6 +144,25 @@ Key steps:
 6. **Completion** (modal-style) — *"Nice — this automation will help you recover missed engagement."*
 7. **Conversion nudge** (`settings-upgrade-btn`) → navigate to `/settings?tab=billing` — *"You've started using automations — upgrading ensures they keep running after your trial ends."*
 
+### `dynamicTour.ts` — Riley: Question-Led Dynamic Tour
+
+Question-driven tours are generated at runtime from chat input and existing `data-orbital-id` anchors.
+
+Example: _"How do I clean inactive contacts and send a re-engagement campaign?"_
+
+Generated flow:
+1. **(Conditional)** go to audiences (`sidebar-audiences`) only if user is not already on `/audiences?tab=segments`
+2. **Open segment modal** (`audiences-new-segment-btn`) — waits for `segment:modal-open`
+3. **Fill and create segment** (`audiences-segment-modal`) — waits for `segment:created`
+4. **Go to campaigns** (`sidebar-campaigns`) — waits for route `/campaigns`
+5. **Create campaign** (`campaigns-list-create-btn`) — waits for route prefix `/campaigns/new`
+6. **Pick audience + send** (`wizard-audience-select`, `wizard-send-btn`) — waits for `campaign:sent`
+
+Important runtime safeguards:
+- Skip the first navigation step if the user is already on the target route (prevents flash-through)
+- Keep modal steps anchored to stable modal containers to avoid transient target-loss closes
+- Loader overlay is non-click-dismissable while resolving targets
+
 ---
 
 ## Data Flow Summary
@@ -151,7 +177,9 @@ flowchart TD
     ProactiveBubble -->|"startTour(workflowN)"| TourEngine
     TourEngine -->|"highlights element"| TourOverlay
     TourEngine -->|"listens for events"| WindowBridge
-    OrbitalPanel -->|"startTour()"| TourEngine
+    OrbitalPanel -->|"startTour() / startGeneratedTour()"| TourEngine
+    OrbitalPanel -->|"buildTourFromQuestion(question)"| DynamicTourBuilder
+    DynamicTourBuilder -->|"generated steps"| TourEngine
     OrbitalPanel -->|"Chat / Help / Launchpad tabs"| OrbitalWidget
 ```
 
@@ -171,7 +199,36 @@ flowchart TD
 | `src/orbital/TourOverlay.tsx` | New — spotlight + tooltip |
 | `src/orbital/tours/workflow1.ts` | New — Maya tour steps |
 | `src/orbital/tours/workflow2.ts` | New — Devon tour steps |
+| `src/orbital/dynamicTour.ts` | New — question-to-tour runtime mapper |
 | `src/demo/scenarios.ts` | New — scenario data snapshots |
 | `src/demo/ScenarioSwitcher.tsx` | New — switcher banner |
 | `src/store/index.ts` | Add `loadScenario()` action + `activeScenario` slice |
 | `src/App.tsx` | Mount `ScenarioSwitcher` above shell |
+
+---
+
+## Known Edge Cases + Mitigations
+
+1. **User already on target route (step flash-through)**
+   - **Risk:** Navigation step appears briefly and auto-advances, creating visual noise.
+   - **Mitigation:** In `dynamicTour.ts`, conditionally skip route-entry steps if `window.__mailflow.route` already matches target.
+
+2. **Target briefly unavailable during rerender (tour closes unexpectedly)**
+   - **Risk:** Spotlight target disappears for a frame; overlay falls back to loader and accidental click ends tour.
+   - **Mitigation:** Keep the loader overlay non-click-dismissable while resolving targets; avoid using brittle targets for in-progress form steps.
+
+3. **Modal interactions interrupted by spotlight bounds**
+   - **Risk:** Clicking/typing inside modal is blocked or closes the tour.
+   - **Mitigation:** Anchor modal steps to stable modal containers (`role=\"dialog\"` / modal-level `data-orbital-id`) and use `spotlightBounds: 'nearest-dialog'` where needed.
+
+4. **Action inferred from click instead of completion**
+   - **Risk:** Tour advances before user actually completes the intended task.
+   - **Mitigation:** Gate progression with completion events (`segment:created`, `automation:send-email-added`, `campaign:sent`) instead of pure click events.
+
+5. **Question unsupported by mapper**
+   - **Risk:** Dynamic tour cannot be built reliably and user receives no actionable guidance.
+   - **Mitigation:** Return fallback response plus nearest static tour recommendation (`workflow1`/`workflow2`) from chat.
+
+6. **Query-string-dependent screens not syncing local tab state**
+   - **Risk:** Route changes but visible tab/content does not update; tour gets stuck on `Navigating`.
+   - **Mitigation:** Keep tab state bidirectionally synced with URL search params (initialize from query and react to query updates).

@@ -50,6 +50,9 @@ function AppShell() {
       if (state.checkoutAbandoned && !prevState.checkoutAbandoned) {
         emitOrbitalEvent('checkout:abandoned');
       }
+      if (state.plan !== prevState.plan) {
+        emitOrbitalEvent('plan:upgraded', { plan: state.plan });
+      }
       syncBridge(location.pathname + location.search);
     });
     return unsub;

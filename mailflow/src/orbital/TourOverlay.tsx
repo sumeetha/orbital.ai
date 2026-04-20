@@ -174,6 +174,7 @@ export default function TourOverlay() {
       'wizard-send-btn': { block: 'end', behavior: 'smooth', inline: 'nearest' },
       'automations-create-btn': { block: 'center', behavior: 'smooth', inline: 'nearest' },
       'automations-trigger-node': { block: 'center', behavior: 'smooth', inline: 'nearest' },
+      'automations-add-step-area': { block: 'center', behavior: 'smooth', inline: 'nearest' },
       'automations-add-step-btn': { block: 'center', behavior: 'smooth', inline: 'nearest' },
       'settings-upgrade-btn': { block: 'center', behavior: 'smooth', inline: 'nearest' },
     };
@@ -301,7 +302,7 @@ export default function TourOverlay() {
             </button>
             <button
               type="button"
-              className="flex-1 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900 transition-colors hover:bg-amber-100"
+              className="flex-1 rounded-lg border border-border bg-white px-4 py-3 text-sm font-medium text-text transition-colors hover:border-primary/50 hover:bg-blue-50/50"
               onClick={() => {
                 setSurveyEase('difficult');
                 nextStep();
@@ -433,7 +434,7 @@ export default function TourOverlay() {
             {renderMessage(currentStep.message)}
           </p>
           {currentStep.subMessage && (
-            <p className="text-xs text-text-muted bg-slate-50 rounded-lg px-3 py-2 mt-3">
+            <p className="mt-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs leading-relaxed text-primary">
               {currentStep.subMessage}
             </p>
           )}
@@ -614,7 +615,7 @@ export default function TourOverlay() {
 
       {/* If target element not found yet, show centered loading indicator */}
       {!spotRect && !currentStep.isModal && (
-        <div className="fixed inset-0 z-[999] bg-black/50 flex items-end justify-center pb-32 pointer-events-auto" onClick={endTour}>
+        <div className="fixed inset-0 z-[999] bg-black/50 flex items-end justify-center pb-32 pointer-events-none">
           <div className="bg-white rounded-xl px-4 py-3 text-sm text-text-muted shadow-lg pointer-events-none">
             Navigating…
           </div>

@@ -8,9 +8,10 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   wide?: boolean;
+  'data-orbital-id'?: string;
 }
 
-export default function Modal({ open, onClose, title, children, wide }: ModalProps) {
+export default function Modal({ open, onClose, title, children, wide, 'data-orbital-id': dataOrbitalId }: ModalProps) {
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -28,6 +29,7 @@ export default function Modal({ open, onClose, title, children, wide }: ModalPro
       <div
         role="dialog"
         aria-modal="true"
+        data-orbital-id={dataOrbitalId}
         className={`relative bg-white rounded-lg shadow-xl max-h-[85vh] overflow-auto
           ${wide ? 'w-full max-w-3xl' : 'w-full max-w-md'} mx-4`}
       >

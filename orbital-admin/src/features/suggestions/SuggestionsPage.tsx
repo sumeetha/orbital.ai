@@ -1,15 +1,45 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Flag, MousePointerClick, BarChart3, ChevronDown, ChevronUp, Eye, Pencil, Check, X, Shield, Loader2, GripVertical } from 'lucide-react';
+import {
+  Sparkles, Flag, MousePointerClick, BarChart3, ChevronDown, ChevronUp, Eye, Pencil,
+  Check, X, Shield, Loader2, GripVertical,
+  Crosshair, ListChecks, MessageCircle, SquareStack, Megaphone, ThumbsUp, Star, FileText,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, Button, Badge, Input } from '../../components/ui';
 import { PageHeader } from '../../components/PageHeader';
 import { useStore } from '../../store';
 import type { Suggestion, TriggerType } from '../../mock/suggestions';
+import type { EngagementSubType } from '../../mock/engagements';
 
 const triggerIcons: Record<TriggerType, typeof Flag> = { state: Flag, behavioral: MousePointerClick, metric: BarChart3 };
 const triggerColors: Record<TriggerType, 'slate' | 'amber' | 'blue'> = { state: 'slate', behavioral: 'amber', metric: 'blue' };
-const actionColors: Record<string, 'violet' | 'blue' | 'amber'> = { tour: 'violet', nudge: 'blue', tooltip: 'amber' };
+const actionColors: Record<string, 'blue' | 'amber' | 'violet'> = { tour: 'blue', nudge: 'amber', feedback: 'violet' };
+
+const subTypeConfig: Record<string, { icon: typeof Flag; label: string; color: string }> = {
+  'spotlight': { icon: Crosshair, label: 'Spotlight', color: 'bg-amber-50 text-amber-700' },
+  'checklist': { icon: ListChecks, label: 'Checklist', color: 'bg-orange-50 text-orange-700' },
+  'banner': { icon: Flag, label: 'Banner', color: 'bg-yellow-50 text-yellow-700' },
+  'popup': { icon: MessageCircle, label: 'Popup', color: 'bg-rose-50 text-rose-700' },
+  'modal': { icon: SquareStack, label: 'Modal', color: 'bg-red-50 text-red-700' },
+  'micro-survey': { icon: Megaphone, label: 'Micro Survey', color: 'bg-violet-50 text-violet-700' },
+  'nps': { icon: BarChart3, label: 'NPS', color: 'bg-purple-50 text-purple-700' },
+  'like-dislike': { icon: ThumbsUp, label: 'Like / Dislike', color: 'bg-fuchsia-50 text-fuchsia-700' },
+  'star-rating': { icon: Star, label: 'Star Rating', color: 'bg-pink-50 text-pink-700' },
+  'large-survey': { icon: FileText, label: 'Large Survey', color: 'bg-indigo-50 text-indigo-700' },
+};
+
+function SubTypeBadge({ subType }: { subType?: EngagementSubType }) {
+  if (!subType) return null;
+  const cfg = subTypeConfig[subType];
+  if (!cfg) return null;
+  const Icon = cfg.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${cfg.color}`}>
+      <Icon size={11} /> {cfg.label}
+    </span>
+  );
+}
 
 const generatingMessages = [
   'Analyzing your product structure...',
@@ -125,9 +155,7 @@ function SuggestionCard({ suggestion }: { suggestion: Suggestion }) {
                 <h3 className="font-semibold text-sm">{suggestion.title}</h3>
                 <Badge color={triggerColors[suggestion.triggerType]}>{suggestion.triggerType}</Badge>
                 <Badge color={actionColors[suggestion.actionType] || 'slate'}>{suggestion.actionType}</Badge>
-                <Badge color={suggestion.status === 'accepted' ? 'green' : suggestion.status === 'dismissed' ? 'slate' : 'blue'}>
-                  {suggestion.status}
-                </Badge>
+                <SubTypeBadge subType={suggestion.actionSubType} />
               </div>
               <p className="text-xs text-orbital-text-muted mt-1">{suggestion.triggerSummary}</p>
               <p className="text-xs text-orbital-text-muted">Segment: {suggestion.segment}</p>

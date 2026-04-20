@@ -254,12 +254,83 @@ If user hesitates:
 
 ---
 
+## Workflow 3: Question-Led Dynamic Tour (Riley)
+
+### Persona  
+**User:** Ops Manager at a growing SaaS company  
+**State:** Already active in product; needs help with a specific task flow  
+
+---
+
+### Step 1: User Asks a Concrete Workflow Question  
+In Orbital chat, user asks:
+
+> “How do I clean inactive contacts and send a re-engagement campaign?”
+
+Orbital interprets intent and generates a contextual tour at runtime.
+
+---
+
+### Step 2: Dynamic Plan Generation (Annotation-Driven)  
+Orbital maps question intent to deterministic UI anchors (`data-orbital-id`) and bridge events.
+
+Generated guide focuses on:
+1. Segments in Audiences  
+2. Segment creation  
+3. Campaign creation + audience selection  
+4. Send action
+
+---
+
+### Step 3: Context-Aware Start (No Redundant Steps)  
+If user is already on `Audiences → Segments`, Orbital **skips** the “Go to Audiences” step.
+
+This avoids flash-through cards and preserves continuity.
+
+---
+
+### Step 4: Modal-Safe Guided Form Completion  
+Orbital asks user to click **New segment** and waits for modal open event.  
+Then guidance anchors to the segment modal container and waits for **Create segment** completion event.
+
+Key behavior:
+- User can type freely in form fields (tour does not close)
+- Tour advances only after segment is actually created
+
+---
+
+### Step 5: Continue to Campaign + Send  
+After segment creation, Orbital guides:
+- Go to Campaigns  
+- Create campaign  
+- Select audience  
+- Send campaign
+
+Progression remains event-gated for critical actions.
+
+---
+
+### Step 6: Fallback for Unsupported Questions  
+If confidence is low or no safe mapping is available:
+- Orbital returns a helpful response
+- Recommends nearest static tour (activation or automation path)
+
+---
+
+### Outcome  
+- User gets guidance tailored to their question, not a fixed script  
+- Tour remains stable through modal interactions and form entry  
+- Assistance is adaptive, deterministic, and user-driven end-to-end
+
+---
+
 ## Key UX Principles Demonstrated
 
 - **Guide, don’t act** → User retains full control  
 - **Adaptive tours > static walkthroughs**  
 - **Context-aware entry points** → Start where the user is  
 - **Non-linear progression** → Skip irrelevant steps  
+- **Question-to-tour synthesis** → Generate workflow guidance from user intent  
 - **Friction-triggered assistance** → Help appears when needed  
 - **Learning by doing** → Users complete actions themselves  
 - **Feedback in context** → Captured at meaningful moments  

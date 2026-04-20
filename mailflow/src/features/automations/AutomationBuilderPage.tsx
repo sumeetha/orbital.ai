@@ -17,6 +17,7 @@ import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { StatusChip } from '../../components/Badge';
 import { ORBITAL_IDS } from '../../orbital/ids';
+import { emitOrbitalEvent } from '../../orbital/bridge';
 import type { AutomationStep, AutomationTrigger } from '../../types';
 
 type NodeAddress = { path: number[]; branch?: 'yes' | 'no' };
@@ -192,6 +193,10 @@ export default function AutomationBuilderPage() {
     updateAutomation(automation.id, { steps: newSteps });
     setShowAddStep(false);
     setAddStepBranch(null);
+    emitOrbitalEvent('automation:step-added', { automationId: automation.id, stepType: type });
+    if (type === 'sendEmail') {
+      emitOrbitalEvent('automation:send-email-added', { automationId: automation.id });
+    }
     addToast('Step added', 'success');
   };
 
@@ -281,8 +286,9 @@ export default function AutomationBuilderPage() {
             />
           ))}
 
-          {/* Add step button */}
-          <div className="flex justify-center pt-2">
+          {/* Add step button + picker */}
+          <div className="pt-2" data-orbital-id={ORBITAL_IDS.automationsAddStepArea}>
+            <div className="flex justify-center">
             <button
               data-orbital-id={ORBITAL_IDS.automationsAddStepBtn}
               onClick={() => {
@@ -296,25 +302,26 @@ export default function AutomationBuilderPage() {
               <Plus size={16} />
               Add step
             </button>
-          </div>
-
-          {/* Step type picker */}
-          {showAddStep && (
-            <div className="flex justify-center pt-2">
-              <div className="bg-white border border-border rounded-lg shadow-lg p-2 flex gap-2">
-                {STEP_TYPE_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => handleAddStep(opt.value)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-slate-50 transition-colors"
-                  >
-                    {stepIcon(opt.value)}
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
             </div>
-          )}
+
+            {/* Step type picker */}
+            {showAddStep && (
+              <div className="flex justify-center pt-2">
+                <div className="bg-white border border-border rounded-lg shadow-lg p-2 flex gap-2">
+                  {STEP_TYPE_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => handleAddStep(opt.value)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-slate-50 transition-colors"
+                    >
+                      {stepIcon(opt.value)}
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

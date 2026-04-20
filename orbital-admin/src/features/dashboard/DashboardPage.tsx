@@ -75,13 +75,10 @@ export function DashboardPage() {
               <div className="space-y-2">
                 {suggestions.slice(0, 4).map((sug) => (
                   <div key={sug.id} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
-                    <Badge color={sug.triggerType === 'behavioral' ? 'amber' : sug.triggerType === 'metric' ? 'blue' : 'slate'}>
-                      {sug.triggerType}
+                    <Badge color={sug.actionType === 'tour' ? 'blue' : sug.actionType === 'nudge' ? 'amber' : 'violet'}>
+                      {sug.actionType}
                     </Badge>
                     <span className="text-sm flex-1 truncate">{sug.title}</span>
-                    <Badge color={sug.status === 'accepted' ? 'green' : sug.status === 'dismissed' ? 'slate' : 'blue'}>
-                      {sug.status}
-                    </Badge>
                   </div>
                 ))}
               </div>
@@ -139,7 +136,7 @@ export function DashboardPage() {
               {suggestions.length > 0 && (
                 <div className="text-xs text-orbital-text-muted flex items-start gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-orbital-info mt-1.5 shrink-0" />
-                  {suggestions.length} tour/nudge drafts generated
+                  {suggestions.length} engagement drafts generated
                 </div>
               )}
               {!journeyComplete.knowledge && (

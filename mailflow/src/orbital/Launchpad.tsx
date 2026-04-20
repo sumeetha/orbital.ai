@@ -9,7 +9,7 @@ const tours = [
     title: 'Send Your First Campaign',
     description:
       'A guided walkthrough from template selection to hitting send — perfect for new users.',
-    steps: 6,
+    steps: 5,
     time: '6 min',
     scenarioHint: 'maya',
   },

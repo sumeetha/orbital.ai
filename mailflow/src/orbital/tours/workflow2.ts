@@ -29,9 +29,11 @@ export const workflow2Steps: TourStep[] = [
   },
   {
     id: 'w2-add-step',
-    targetId: 'automations-add-step-btn',
+    targetId: 'automations-add-step-area',
     message:
       'Now **add a step** — select "Send email" to create your follow-up message. You can also add a delay so it doesn\'t arrive immediately.',
+    waitForEvent: 'automation:send-email-added',
+    advanceDelayMs: 120,
   },
   {
     id: 'w2-done',
@@ -48,8 +50,9 @@ export const workflow2Steps: TourStep[] = [
     route: '/settings?tab=billing',
     spotlightBounds: 'nearest-dialog',
     message:
-      "You've set up automations that are already working for you. Upgrading ensures they keep running after your trial ends — no interruption.",
-    ctaLabel: 'Upgrade now',
-    subMessage: 'Many users upgrade after setting up their first automation.',
+      "You're ready to upgrade. Open checkout and complete payment to keep your automations running with no interruptions.",
+    ctaLabel: 'Complete checkout',
+    waitForEvent: 'plan:upgraded',
+    subMessage: 'Once checkout is complete, we will confirm your upgrade automatically.',
   },
 ];

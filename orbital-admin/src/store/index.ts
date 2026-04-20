@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { type KnowledgeSource, type ExtractedKnowledge, sampleSources, sampleExtracted } from '../mock/knowledge-sources';
 import { type Hotspot, hotspots } from '../mock/hotspots';
 import { type Suggestion, type RateLimits, mockSuggestions, defaultRateLimits } from '../mock/suggestions';
+import { type Engagement, type EngagementStatus, mockEngagements } from '../mock/engagements';
+import { type BrandSettings, type ButtonStyle, defaultBrandSettings, autoDetectedBrand } from '../mock/branding';
+import { type TeamMember, type TeamRole, mockTeamMembers, type BillingInfo, mockBillingInfo } from '../mock/settings';
 
 type CapturedElement = {
   hotspot: Hotspot;
@@ -63,6 +66,28 @@ type AppState = {
   updateSuggestion: (id: string, data: Partial<Suggestion>) => void;
   updateRateLimits: (limits: Partial<RateLimits>) => void;
   completeSuggestions: () => void;
+
+  // Engagements
+  engagements: Engagement[];
+  pauseEngagement: (id: string) => void;
+  resumeEngagement: (id: string) => void;
+  archiveEngagement: (id: string) => void;
+
+  // Branding
+  brandSettings: BrandSettings;
+  styleGuideUrl: string;
+  isExtracting: boolean;
+  updateBrandSetting: <K extends keyof BrandSettings>(field: K, value: BrandSettings[K]) => void;
+  fetchBrandFromUrl: (url: string) => void;
+
+  // Settings — Team
+  teamMembers: TeamMember[];
+  inviteMember: (email: string, role: TeamRole) => void;
+  updateMemberRole: (id: string, role: TeamRole) => void;
+  removeMember: (id: string) => void;
+
+  // Settings — Billing
+  billingInfo: BillingInfo;
 
   // UI
   previewSuggestionId: string | null;
@@ -182,6 +207,70 @@ export const useStore = create<AppState>((set, get) => ({
     set((s) => ({ rateLimits: { ...s.rateLimits, ...limits } })),
   completeSuggestions: () =>
     set((s) => ({ journeyComplete: { ...s.journeyComplete, suggestions: true } })),
+
+  // Engagements
+  engagements: mockEngagements,
+  pauseEngagement: (id) =>
+    set((s) => ({
+      engagements: s.engagements.map((e) =>
+        e.id === id ? { ...e, status: 'paused' as EngagementStatus } : e
+      ),
+    })),
+  resumeEngagement: (id) =>
+    set((s) => ({
+      engagements: s.engagements.map((e) =>
+        e.id === id ? { ...e, status: 'active' as EngagementStatus } : e
+      ),
+    })),
+  archiveEngagement: (id) =>
+    set((s) => ({
+      engagements: s.engagements.filter((e) => e.id !== id),
+    })),
+
+  // Branding
+  brandSettings: defaultBrandSettings,
+  styleGuideUrl: '',
+  isExtracting: false,
+  updateBrandSetting: (field, value) =>
+    set((s) => ({ brandSettings: { ...s.brandSettings, [field]: value } })),
+  fetchBrandFromUrl: (url) => {
+    set({ styleGuideUrl: url, isExtracting: true });
+    setTimeout(() => {
+      set((s) => ({
+        brandSettings: { ...s.brandSettings, ...autoDetectedBrand },
+        isExtracting: false,
+      }));
+    }, 1500);
+  },
+
+  // Settings — Team
+  teamMembers: mockTeamMembers,
+  inviteMember: (email, role) =>
+    set((s) => ({
+      teamMembers: [
+        ...s.teamMembers,
+        {
+          id: `tm-${Date.now()}`,
+          name: email.split('@')[0],
+          email,
+          role,
+          status: 'invited' as const,
+          lastActive: 'Never',
+          avatarInitials: email.slice(0, 2).toUpperCase(),
+        },
+      ],
+    })),
+  updateMemberRole: (id, role) =>
+    set((s) => ({
+      teamMembers: s.teamMembers.map((m) => (m.id === id ? { ...m, role } : m)),
+    })),
+  removeMember: (id) =>
+    set((s) => ({
+      teamMembers: s.teamMembers.filter((m) => m.id !== id),
+    })),
+
+  // Settings — Billing
+  billingInfo: mockBillingInfo,
 
   // UI
   previewSuggestionId: null,

@@ -14,6 +14,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useStore } from '../../store';
 import type { AppState } from '../../store';
 import type { User, Invoice } from '../../types';
+import { useTour } from '../../orbital/TourEngine';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import Input from '../../components/Input';
@@ -93,6 +94,9 @@ export default function SettingsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'profile';
   const isCheckout = searchParams.get('checkout') === '1';
+  const upgradeCompleted = searchParams.get('upgraded') === '1';
+  const [showUpgradeSuccessModal, setShowUpgradeSuccessModal] = useState(false);
+  const { endTour } = useTour();
 
   const {
     currentUser,
@@ -155,13 +159,16 @@ export default function SettingsPage() {
             plan={plan}
             invoices={invoices}
             isCheckout={isCheckout}
+            upgradeCompleted={upgradeCompleted}
             onUpgradeClick={() => {
               setSearchParams({ tab: 'billing', checkout: '1' });
             }}
             onCompleteCheckout={() => {
               upgradePlan('pro');
-              setSearchParams({ tab: 'billing' });
+              setSearchParams({ tab: 'billing', upgraded: '1' });
               addToast('Upgraded to Pro! Welcome aboard.', 'success');
+              setShowUpgradeSuccessModal(true);
+              endTour();
             }}
             onCloseCheckout={() => {
               setCheckoutAbandoned(true);
@@ -181,6 +188,28 @@ export default function SettingsPage() {
         )}
         {activeTab === 'integrations' && <IntegrationsTab />}
       </div>
+
+      <Modal
+        open={showUpgradeSuccessModal}
+        onClose={() => setShowUpgradeSuccessModal(false)}
+        title="Upgrade complete"
+      >
+        <div className="space-y-4">
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <p className="text-sm font-semibold text-emerald-900">
+              You are now on Pro.
+            </p>
+            <p className="mt-1 text-xs text-emerald-800">
+              Your automations will keep running with no interruption.
+            </p>
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => setShowUpgradeSuccessModal(false)}>
+              Continue
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -195,6 +224,7 @@ function ProfileTab({
   addToast: AppState['addToast'];
 }) {
   const [name, setName] = useState(user.name);
+  const [organization, setOrganization] = useState('MailFlow Demo');
 
   return (
     <div className="max-w-lg space-y-6">
@@ -215,6 +245,12 @@ function ProfileTab({
         label="Full name"
         value={name}
         onChange={(e) => setName(e.target.value)}
+      />
+
+      <Input
+        label="Organization"
+        value={organization}
+        onChange={(e) => setOrganization(e.target.value)}
       />
 
       <Input
@@ -291,6 +327,7 @@ function BillingTab({
   plan,
   invoices,
   isCheckout,
+  upgradeCompleted,
   onUpgradeClick,
   onCompleteCheckout,
   onCloseCheckout,
@@ -298,6 +335,7 @@ function BillingTab({
   plan: string;
   invoices: Invoice[];
   isCheckout: boolean;
+  upgradeCompleted: boolean;
   onUpgradeClick: () => void;
   onCompleteCheckout: () => void;
   onCloseCheckout: () => void;
@@ -307,6 +345,22 @@ function BillingTab({
 
   return (
     <div className="space-y-8 relative">
+      {upgradeCompleted && (
+        <Card className="border-emerald-200 bg-emerald-50/60 p-4">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100">
+              <Check size={14} className="text-emerald-700" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-emerald-900">Upgrade complete</p>
+              <p className="text-xs text-emerald-800">
+                Your workspace is now on Pro and all automation features are active.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Plan cards */}
       <div>
         <h3 className="text-sm font-semibold text-text mb-4">Your plan</h3>

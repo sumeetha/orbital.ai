@@ -27,6 +27,13 @@ const bubbleByScenario: Record<ScenarioId, BubbleConfig> = {
     tourId: 'workflow2',
     delayMs: 800,
   },
+  riley: {
+    message:
+      'Ask me a workflow question and I can build a contextual tour on the fly from what you are trying to do.',
+    cta: 'Show me an example',
+    tourId: 'workflow2',
+    delayMs: 1200,
+  },
 };
 
 export default function ProactiveBubble({ panelOpen }: { panelOpen?: boolean }) {
