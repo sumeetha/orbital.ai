@@ -86,10 +86,10 @@ orbital-admin/
     - **Dashboard** (top-level)
     - **Argus Copilot** (collapsible section with sub-menus):
       - Knowledge Base
-      - Integrations
       - Annotations
       - Instructions
       - Drafts
+    - **Integrations** (top-level)
     - **Engagements** (collapsible section with sub-menus):
       - All Engagements
       - Tours
@@ -124,7 +124,7 @@ orbital-admin/
 |------|--------|------------------|---------|
 | `/` | Dashboard | Dashboard | — |
 | `/knowledge` | Knowledge Base | Argus Copilot → Knowledge Base | Journey 0 |
-| `/integrations` | Integrations | Argus Copilot → Integrations | — |
+| `/integrations` | Integrations | Integrations | — |
 | `/annotate` | Annotations | Argus Copilot → Annotations | Journey 1 |
 | `/setup` | Instructions | Argus Copilot → Instructions | Journey 2 |
 | `/suggestions` | Drafts | Argus Copilot → Drafts | Journey 3 |

@@ -1,5 +1,19 @@
 # Orbital AI Admin — Changelog
 
+## 2026-04-20 (cont. 5)
+
+### Move Integrations Outside Copilot Menu
+
+Promoted Integrations from a Copilot sub-item to a top-level sidebar link, positioned between Copilot and Engagements.
+
+**File:** `src/components/Sidebar.tsx`
+- Removed `{ to: '/integrations', ... }` from `argusItems` array
+- Added top-level `NavLink` for `/integrations` with `Plug` icon between Copilot section and Engagements section
+
+**Spec:** Updated §3 sidebar nav to show Integrations as top-level; updated route map sidebar location from "Argus Copilot → Integrations" to "Integrations"
+
+---
+
 ## 2026-04-20 (cont. 4)
 
 ### MailFlow Orbital: Dynamic Question-Led Scenario + Tour Stability Fixes

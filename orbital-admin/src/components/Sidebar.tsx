@@ -21,7 +21,6 @@ function OrbitalLogo({ size = 24 }: { size?: number }) {
 
 const argusItems = [
   { to: '/knowledge', icon: BookOpen, label: 'Knowledge Base', journey: 'knowledge' as const },
-  { to: '/integrations', icon: Plug, label: 'Integrations', journey: null },
   { to: '/annotate', icon: MousePointerClick, label: 'Annotations', journey: 'annotation' as const },
   { to: '/setup', icon: MessageSquare, label: 'Instructions', journey: 'setup' as const },
   { to: '/suggestions', icon: FileEdit, label: 'Drafts', journey: 'suggestions' as const },
@@ -151,6 +150,19 @@ export function Sidebar() {
           items={argusItems}
           journeyComplete={journeyComplete}
         />
+
+        {/* Integrations */}
+        <NavLink
+          to="/integrations"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              isActive ? 'bg-orbital-surface text-white' : 'text-orbital-text-muted hover:text-white hover:bg-orbital-surface/50'
+            }`
+          }
+        >
+          <Plug size={18} />
+          <span className="flex-1">Integrations</span>
+        </NavLink>
 
         {/* Engagements */}
         <CollapsibleSection
