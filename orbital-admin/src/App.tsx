@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
-import { AskArgus } from './components/AskArgus';
+import { AskAI } from './components/AskAI';
 import { DashboardPage } from './features/dashboard/DashboardPage';
 import { KnowledgePage } from './features/knowledge/KnowledgePage';
 import { IntegrationsPage } from './features/integrations/IntegrationsPage';
@@ -44,7 +44,7 @@ export default function App() {
             <Route path="/settings/billing" element={<BillingPage />} />
           </Routes>
         </main>
-        <AskArgus />
+        <AskAI />
       </div>
     </BrowserRouter>
   );

@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { X, ChevronRight } from 'lucide-react';
-import { useTour, type TourId } from './TourEngine';
+import { useTour } from './TourContext';
+import type { TourId } from './TourEngine';
 import { useStore } from '../store';
 import type { ScenarioId } from '../demo/scenarios';
 
@@ -18,14 +19,14 @@ const bubbleByScenario: Record<ScenarioId, BubbleConfig> = {
       "Looks like you're setting up your first campaign. Want a quick guided walkthrough?",
     cta: "Yes, show me!",
     tourId: 'workflow1',
-    delayMs: 2000,
+    delayMs: 5000,
   },
   devon: {
     message:
       "You're getting good engagement on your campaigns 👀 Want a quick walkthrough of how to automate follow-ups?",
     cta: 'Show me how',
     tourId: 'workflow2',
-    delayMs: 800,
+    delayMs: 2000,
   },
   riley: {
     message:
@@ -41,37 +42,41 @@ export default function ProactiveBubble({ panelOpen }: { panelOpen?: boolean }) 
   const { isActive, startTour } = useTour();
   const activeScenario = useStore((s) => s.activeScenario);
   const campaigns = useStore((s) => s.campaigns);
+  const handledScenarios = useStore((s) => s.proactiveBubbleHandled);
+  const markHandled = useStore((s) => s.markProactiveBubbleHandled);
 
   const [visible, setVisible] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Track scenario changes to re-show the bubble
-  const prevScenarioRef = useRef<ScenarioId | null>(null);
 
-  useEffect(() => {
-    // Reset dismissed state when scenario changes
-    if (activeScenario !== prevScenarioRef.current) {
-      prevScenarioRef.current = activeScenario;
-      setDismissed(false);
-      setVisible(false);
-    }
-  }, [activeScenario]);
+  const alreadyHandled = activeScenario ? handledScenarios.includes(activeScenario) : false;
 
   useEffect(() => {
     if (!activeScenario) return;
-    if (dismissed) return;
+    if (alreadyHandled) return;
     if (isActive) return; // don't show while tour is running
-    if (location.pathname !== '/') return;
 
     const config = bubbleByScenario[activeScenario];
 
-    // Scenario 1 (Maya): only show on dashboard when there are no campaigns
-    if (activeScenario === 'maya' && campaigns.length > 0) return;
+    // Scenario 1 (Maya): show on the Template step of the wizard after the user hesitates
+    if (activeScenario === 'maya') {
+      const onWizardTemplate =
+        location.pathname === '/campaigns/new' &&
+        (location.search === '' || location.search === '?step=1');
+      if (!onWizardTemplate) return;
+      if (campaigns.length > 0) return;
+    } else {
+      if (location.pathname !== '/') return;
+    }
 
     if (timerRef.current) clearTimeout(timerRef.current);
 
     timerRef.current = setTimeout(() => {
-      useStore.getState().enqueueOrbitalProactive({
+      const store = useStore.getState();
+      if (store.activeScenario !== activeScenario) return;
+      if (store.proactiveBubbleHandled.includes(activeScenario)) return;
+      if (activeScenario === 'maya' && store.campaigns.length > 0) return;
+
+      store.enqueueOrbitalProactive({
         messageId: `proactive-${activeScenario}-${Date.now()}`,
         message: config.message,
         ctaLabel: config.cta,
@@ -83,7 +88,7 @@ export default function ProactiveBubble({ panelOpen }: { panelOpen?: boolean }) 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [activeScenario, dismissed, isActive, location.pathname, campaigns.length]);
+  }, [activeScenario, alreadyHandled, isActive, location.pathname, location.search, campaigns.length]);
 
   // Hide when tour starts
   useEffect(() => {
@@ -99,14 +104,14 @@ export default function ProactiveBubble({ panelOpen }: { panelOpen?: boolean }) 
 
   const handleCta = () => {
     setVisible(false);
-    setDismissed(true);
+    markHandled(activeScenario);
     useStore.getState().stripOrbitalPendingTourCta();
     startTour(config.tourId);
   };
 
   const handleDismiss = () => {
     setVisible(false);
-    setDismissed(true);
+    markHandled(activeScenario);
     useStore.getState().clearOrbitalProactiveInbox();
   };
 

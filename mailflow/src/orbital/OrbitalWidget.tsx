@@ -3,7 +3,7 @@ import { MessageSquare, X } from 'lucide-react';
 import OrbitalPanel from './OrbitalPanel';
 import ProactiveBubble from './ProactiveBubble';
 import TourOverlay from './TourOverlay';
-import { useTour } from './TourEngine';
+import { useTour } from './TourContext';
 import { useStore } from '../store';
 
 export default function OrbitalWidget() {

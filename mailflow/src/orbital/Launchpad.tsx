@@ -1,5 +1,7 @@
 import { Play, CheckCircle, Zap, Rocket } from 'lucide-react';
-import { useTour, type TourId, getTourProgress } from './TourEngine';
+import { useTour } from './TourContext';
+import type { TourId } from './TourEngine';
+import { getTourProgress } from './tourTypes';
 import { useStore } from '../store';
 
 const tours = [
@@ -9,8 +11,8 @@ const tours = [
     title: 'Send Your First Campaign',
     description:
       'A guided walkthrough from template selection to hitting send — perfect for new users.',
-    steps: 5,
-    time: '6 min',
+    steps: 4,
+    time: '5 min',
     scenarioHint: 'maya',
   },
   {

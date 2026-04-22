@@ -20,6 +20,7 @@ import Card from '../../components/Card';
 import Stepper from '../../components/Stepper';
 import Badge from '../../components/Badge';
 import { ORBITAL_IDS } from '../../orbital/ids';
+import { emitOrbitalEvent } from '../../orbital/bridge';
 import type { Campaign } from '../../types';
 
 const STEPS = [
@@ -59,6 +60,10 @@ export default function CampaignCreateWizard() {
   const currentStep = Math.max(0, Math.min(3, (parseInt(searchParams.get('step') ?? '1', 10) - 1)));
 
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+  const handleTemplateSelect = (id: string) => {
+    setSelectedTemplateId(id);
+    emitOrbitalEvent('template:selected');
+  };
   const [selectedAudienceId, setSelectedAudienceId] = useState<string>('segment-all');
   const [fromName, setFromName] = useState('');
   const [subject, setSubject] = useState('');
@@ -165,7 +170,7 @@ export default function CampaignCreateWizard() {
           <StepTemplate
             templates={templates}
             selectedId={selectedTemplateId}
-            onSelect={setSelectedTemplateId}
+            onSelect={handleTemplateSelect}
           />
         )}
         {currentStep === 1 && (

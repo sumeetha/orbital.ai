@@ -19,7 +19,7 @@ function OrbitalLogo({ size = 24 }: { size?: number }) {
   );
 }
 
-const argusItems = [
+const copilotItems = [
   { to: '/knowledge', icon: BookOpen, label: 'Knowledge Base', journey: 'knowledge' as const },
   { to: '/annotate', icon: MousePointerClick, label: 'Annotations', journey: 'annotation' as const },
   { to: '/setup', icon: MessageSquare, label: 'Instructions', journey: 'setup' as const },
@@ -38,7 +38,7 @@ const settingsItems = [
   { to: '/settings/billing', icon: CreditCard, label: 'Billing' },
 ];
 
-const argusPaths = argusItems.map((item) => item.to);
+const copilotPaths = copilotItems.map((item) => item.to);
 const engagementPaths = engagementItems.map((item) => item.to);
 const settingsPaths = settingsItems.map((item) => item.to);
 
@@ -108,7 +108,7 @@ export function Sidebar() {
   const journeyComplete = useStore((s) => s.journeyComplete);
   const location = useLocation();
 
-  const isArgusActive = argusPaths.some((p) =>
+  const isCopilotActive = copilotPaths.some((p) =>
     p === '/suggestions' ? location.pathname.startsWith('/suggestions') : location.pathname === p
   );
   const isEngagementsActive = engagementPaths.some((p) =>
@@ -142,12 +142,12 @@ export function Sidebar() {
           <span className="flex-1">Dashboard</span>
         </NavLink>
 
-        {/* Argus Copilot */}
+        {/* Copilot */}
         <CollapsibleSection
           icon={Bot}
-          label="Argus Copilot"
-          isActive={isArgusActive}
-          items={argusItems}
+          label="Copilot"
+          isActive={isCopilotActive}
+          items={copilotItems}
           journeyComplete={journeyComplete}
         />
 

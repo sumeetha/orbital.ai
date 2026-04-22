@@ -2,26 +2,22 @@ import type { TourStep } from '../TourEngine';
 
 export const workflow1Steps: TourStep[] = [
   {
-    id: 'w1-welcome',
-    targetId: 'dashboard-quickstart-create',
-    message:
-      "Looks like you're setting up your first campaign. Click **Create a campaign** to begin and I'll guide you step by step.",
-    ctaLabel: 'Create campaign',
-    waitForEvent: 'route:prefix:/campaigns/new',
-  },
-  {
     id: 'w1-template',
     targetId: 'wizard-step-template',
     route: '/campaigns/new?step=1',
     message:
       'Start by choosing a template. For newsletters, the **Newsletter** category tends to perform best.',
+    waitForEvent: 'route:/campaigns/new?step=2',
+    advanceDelayMs: 0,
   },
   {
     id: 'w1-audience',
-    targetId: 'wizard-step-audience',
+    targetId: 'wizard-audience-select',
     route: '/campaigns/new?step=2',
     message:
       "Not sure who to send this to? Most first campaigns go to your full contact list — that's totally fine.",
+    waitForEvent: 'route:/campaigns/new?step=3',
+    advanceDelayMs: 0,
   },
   {
     id: 'w1-subject',
@@ -29,6 +25,8 @@ export const workflow1Steps: TourStep[] = [
     route: '/campaigns/new?step=3',
     message:
       'Your subject line drives opens. Try something clear and benefit-driven — avoid vague phrases like "Monthly update".',
+    waitForEvent: 'route:/campaigns/new?step=4',
+    advanceDelayMs: 0,
   },
   {
     id: 'w1-send',

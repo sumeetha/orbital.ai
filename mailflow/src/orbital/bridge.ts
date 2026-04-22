@@ -3,6 +3,7 @@ import { useStore } from '../store';
 type EventType =
   | 'campaign:created'
   | 'campaign:sent'
+  | 'template:selected'
   | 'contacts:imported'
   | 'segment:modal-open'
   | 'segment:created'

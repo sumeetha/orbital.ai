@@ -100,6 +100,10 @@ export interface AppState {
   drainOrbitalPendingChat: () => OrbitalChatLine[];
   stripOrbitalPendingTourCta: () => void;
   clearOrbitalProactiveInbox: () => void;
+
+  /** Scenario IDs whose proactive bubble has already been shown/accepted/dismissed — persists across tour starts so the nudge never re-appears. */
+  proactiveBubbleHandled: ScenarioId[];
+  markProactiveBubbleHandled: (scenarioId: ScenarioId) => void;
 }
 
 const seedContacts = generateContacts();
@@ -246,6 +250,7 @@ export const useStore = create<AppState>((set, get) => ({
       teammateCountDelta: 0,
       toasts: [],
       orbitalPendingChat: [],
+      proactiveBubbleHandled: [],
     }),
 
   orbitalPendingChat: [],
@@ -271,4 +276,12 @@ export const useStore = create<AppState>((set, get) => ({
       orbitalPendingChat: s.orbitalPendingChat.map((m) => ({ id: m.id, role: m.role, text: m.text })),
     })),
   clearOrbitalProactiveInbox: () => set({ orbitalPendingChat: [] }),
+
+  proactiveBubbleHandled: [],
+  markProactiveBubbleHandled: (scenarioId) =>
+    set((s) =>
+      s.proactiveBubbleHandled.includes(scenarioId)
+        ? s
+        : { proactiveBubbleHandled: [...s.proactiveBubbleHandled, scenarioId] }
+    ),
 }));

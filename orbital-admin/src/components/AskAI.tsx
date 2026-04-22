@@ -36,7 +36,7 @@ function getResponse(input: string): string {
   return MOCK_RESPONSES.default;
 }
 
-export function AskArgus() {
+export function AskAI() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -95,7 +95,7 @@ export function AskArgus() {
             className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-orbital-primary hover:bg-orbital-primary-hover text-white pl-4 pr-5 py-3 rounded-full shadow-lg shadow-orbital-primary/25 transition-colors"
           >
             <Bot size={18} />
-            <span className="font-medium text-sm">Ask Argus</span>
+            <span className="font-medium text-sm">Ask AI</span>
           </motion.button>
         )}
       </AnimatePresence>
@@ -117,7 +117,7 @@ export function AskArgus() {
                   <Bot size={16} />
                 </div>
                 <div>
-                  <div className="font-semibold text-sm leading-tight">Ask Argus</div>
+                  <div className="font-semibold text-sm leading-tight">Ask AI</div>
                   <div className="text-[11px] text-white/70">AI Assistant</div>
                 </div>
               </div>
@@ -137,7 +137,7 @@ export function AskArgus() {
                     <Bot size={22} className="text-orbital-primary" />
                   </div>
                   <p className="text-sm font-semibold text-orbital-text-dark mb-1">
-                    Hi! I'm Argus.
+                    Hi! I'm your AI assistant.
                   </p>
                   <p className="text-xs text-orbital-text-muted mb-5">
                     Ask me anything about your product adoption setup, engagement strategies, or
@@ -198,7 +198,7 @@ export function AskArgus() {
                   ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask Argus anything..."
+                  placeholder="Ask AI anything..."
                   className="flex-1 text-sm px-3 py-2.5 rounded-xl border border-orbital-border-light focus:outline-none focus:ring-2 focus:ring-orbital-primary/30 focus:border-orbital-primary placeholder:text-orbital-text-muted"
                 />
                 <button

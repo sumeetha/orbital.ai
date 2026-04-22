@@ -14,7 +14,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useStore } from '../../store';
 import type { AppState } from '../../store';
 import type { User, Invoice } from '../../types';
-import { useTour } from '../../orbital/TourEngine';
+import { useTour } from '../../orbital/TourContext';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import Input from '../../components/Input';

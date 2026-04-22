@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sparkles, RotateCcw } from 'lucide-react';
 import { useStore } from '../store';
 import { scenarios, type ScenarioId } from './scenarios';
-import { useTour } from '../orbital/TourEngine';
+import { useTour } from '../orbital/TourContext';
 import { syncBridge } from '../orbital/bridge';
 
 const scenarioList = [scenarios.maya, scenarios.devon, scenarios.riley];

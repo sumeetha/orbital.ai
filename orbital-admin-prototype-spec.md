@@ -84,7 +84,7 @@ orbital-admin/
   - Orbital logo (custom orbital SVG icon — two crossed elliptical rings around a center dot, matching the favicon)
   - Nav items:
     - **Dashboard** (top-level)
-    - **Argus Copilot** (collapsible section with sub-menus):
+    - **Copilot** (collapsible section with sub-menus):
       - Knowledge Base
       - Annotations
       - Instructions
@@ -100,12 +100,12 @@ orbital-admin/
     - **Settings** (collapsible section with sub-menus):
       - Team
       - Billing
-  - Argus Copilot sub-items show completion indicators (empty circle / checkmark / in-progress dot)
+  - Copilot sub-items show completion indicators (empty circle / checkmark / in-progress dot)
   - Collapsible sections auto-expand when any child route is active; sub-items indent under the parent with a left border
-  - **Ask Argus chat bubble** — a floating conversational AI assistant:
-    - Trigger: "Ask Argus" pill button (Bot icon + label) fixed to the bottom-right corner of the viewport
+  - **Ask AI chat bubble** — a floating conversational AI assistant:
+    - Trigger: "Ask AI" pill button (Bot icon + label) fixed to the bottom-right corner of the viewport
     - Clicking opens a 400×540px chat panel with a branded header, welcome state with suggested prompts, and a message input
-    - Welcome state: Bot icon, "Hi! I'm Argus." greeting, description text, and 3 clickable suggestion buttons
+    - Welcome state: Bot icon, "Hi! I'm your AI assistant." greeting, description text, and 3 clickable suggestion buttons
     - Chat messages: user messages in purple bubbles (right-aligned), assistant responses in grey (left-aligned)
     - Typing indicator with animated bouncing dots during simulated response delay (0.8–1.4s)
     - Mock responses match on keywords (tours, annotations, engagement best practices) for demo purposes
@@ -123,12 +123,12 @@ orbital-admin/
 | Path | Screen | Sidebar Location | Journey |
 |------|--------|------------------|---------|
 | `/` | Dashboard | Dashboard | — |
-| `/knowledge` | Knowledge Base | Argus Copilot → Knowledge Base | Journey 0 |
+| `/knowledge` | Knowledge Base | Copilot → Knowledge Base | Journey 0 |
 | `/integrations` | Integrations | Integrations | — |
-| `/annotate` | Annotations | Argus Copilot → Annotations | Journey 1 |
-| `/setup` | Instructions | Argus Copilot → Instructions | Journey 2 |
-| `/suggestions` | Drafts | Argus Copilot → Drafts | Journey 3 |
-| `/suggestions/:id` | Draft Detail / Edit | Argus Copilot → Drafts | Journey 3 |
+| `/annotate` | Annotations | Copilot → Annotations | Journey 1 |
+| `/setup` | Instructions | Copilot → Instructions | Journey 2 |
+| `/suggestions` | Drafts | Copilot → Drafts | Journey 3 |
+| `/suggestions/:id` | Draft Detail / Edit | Copilot → Drafts | Journey 3 |
 | `/engagements` | All Engagements | Engagements → All Engagements | — |
 | `/engagements/tours` | Tours | Engagements → Tours | — |
 | `/engagements/nudges` | Nudges | Engagements → Nudges | — |
@@ -214,12 +214,12 @@ orbital-admin/
 
 ### 4.3 Integrations — `/integrations`
 
-- **Purpose:** PM connects external tools — MCP servers, CRMs, and product analytics platforms — so Argus can pull live context about users and product usage.
+- **Purpose:** PM connects external tools — MCP servers, CRMs, and product analytics platforms — so the copilot can pull live context about users and product usage.
 - **Key UI:**
 
   **Header area**
   - Page title: "Integrations"
-  - Subtitle: *"Connect your tools so Argus can use real context when generating guidance."*
+  - Subtitle: *"Connect your tools so the copilot can use real context when generating guidance."*
 
   **Integration Categories (tab bar or segmented filter):**
   - **All** | **MCP Servers** | **CRM** | **Product Analytics**
@@ -254,7 +254,7 @@ orbital-admin/
   **Connected integrations panel (appears when ≥1 connected):**
   - Lists connected integrations with last-sync timestamp (mock)
   - "Disconnect" link on each
-  - Summary: "2 integrations connected — Argus will use this context when generating drafts."
+  - Summary: "2 integrations connected — the copilot will use this context when generating drafts."
 
 - **Orbital anchors:** `integrations-category-tabs`, `integrations-grid`, `integrations-connect-modal`, `integrations-connected-panel`
 
@@ -329,7 +329,7 @@ orbital-admin/
 
 ### 4.5 Instructions — `/setup` — Journey 2
 
-- **Purpose:** PM defines product goals, activation points, trial structure, key metrics, and friction points via a conversational flow. These serve as instructions for Argus when generating drafts. Answers are pre-filled from Journey 0 docs where possible.
+- **Purpose:** PM defines product goals, activation points, trial structure, key metrics, and friction points via a conversational flow. These serve as instructions for the copilot when generating drafts. Answers are pre-filled from Journey 0 docs where possible.
 - **Layout:** Left sidebar (topics) + main chat area.
 
 #### Left Sidebar — Topic Progress
@@ -424,7 +424,7 @@ A scrolling chat thread. The agent (Orbital avatar + name) sends messages; the P
 
 ### 4.6 Drafts — `/suggestions` — Journey 3
 
-- **Purpose:** Argus synthesizes knowledge from Journeys 0–2 and presents auto-generated engagement drafts (tours, nudges, feedback) with triggers, rate limits, and step previews.
+- **Purpose:** The copilot synthesizes knowledge from Journeys 0–2 and presents auto-generated engagement drafts (tours, nudges, feedback) with triggers, rate limits, and step previews.
 - **Layout:** Full-width card list with a global settings panel at top.
 
 #### Global Rate Limits Card (top of page)
@@ -452,7 +452,7 @@ A distinct card (subtle border, settings icon) showing AI-proposed rate limits:
 
 #### Drafts List
 
-Header: *"Based on your product goals, UI structure, and documentation, Argus recommends 12 engagements:"*
+Header: *"Based on your product goals, UI structure, and documentation, the copilot recommends 12 engagements:"*
 
 Each draft is an **expandable card** with:
 - **Title**: e.g., "First Campaign Activation Tour"
@@ -464,7 +464,7 @@ Each draft is an **expandable card** with:
 - **Actions row**: "Details" | "Edit" | "Accept" | "Dismiss"
 
 Expanding a card reveals:
-- **Rationale**: Why Argus drafted this (references specific goals/metrics/annotation data)
+- **Rationale**: Why the copilot drafted this (references specific goals/metrics/annotation data)
 - **Tour steps preview**: Numbered list of steps with element names and messages
 - **Trigger details**: Full condition breakdown
 
@@ -670,7 +670,7 @@ Expanding a card reveals:
 
 ### 4.10 Insights — `/insights`
 
-- **Purpose:** Analytics dashboard showing key metrics tied to the goals and risk signals the PM defined in the Argus Copilot Instructions step.
+- **Purpose:** Analytics dashboard showing key metrics tied to the goals and risk signals the PM defined in the Copilot Instructions step.
 - **Key UI:**
 
   **KPI Cards Row (4 cards):**
@@ -1073,7 +1073,7 @@ type SetupAnswers = {
 | `engagementsSlice` | `engagements: Engagement[]` | `pauseEngagement(id)`, `resumeEngagement(id)`, `archiveEngagement(id)` |
 | `brandingSlice` | `brandSettings: BrandSettings`, `styleGuideUrl: string`, `isExtracting: boolean` | `updateBrandSetting(field, value)`, `fetchBrandFromUrl(url)` |
 | `settingsSlice` | `teamMembers: TeamMember[]`, `billingInfo: BillingInfo` | `inviteMember(email, role)`, `updateMemberRole(id, role)`, `removeMember(id)` |
-| `uiSlice` | `sidebarCollapsed: boolean`, `argusExpanded: boolean`, `currentJourney: number`, `previewOpen: boolean`, `previewDraftId: string | null`, `askArgusOpen: boolean` | `toggleSidebar()`, `toggleArgusSection()`, `setJourney(n)`, `openPreview(id)`, `closePreview()`, `toggleAskArgus()` |
+| `uiSlice` | `sidebarCollapsed: boolean`, `copilotExpanded: boolean`, `currentJourney: number`, `previewOpen: boolean`, `previewDraftId: string | null`, `askAIOpen: boolean` | `toggleSidebar()`, `toggleCopilotSection()`, `setJourney(n)`, `openPreview(id)`, `closePreview()`, `toggleAskAI()` |
 
 ### Cross-slice data flow
 
@@ -1120,7 +1120,7 @@ flowchart LR
 
 ### Components to build
 
-`Button` (primary, secondary, ghost, danger), `IconButton`, `Input`, `Textarea`, `Select`, `Chip` (removable, editable), `Card` (expandable), `Modal`, `Tooltip`, `Badge` (status, trigger-type), `Tabs`, `Tree` (animated node insertion), `ChatBubble` (agent / user / prefill-card), `QuickReplyChips`, `ProgressStepper`, `DragHandle`, `EditableText` (inline edit on click), `SplitPane`, `BrowserFrame`, `HotspotOverlay`, `TourSpotlight`, `ProcessingSpinner`, `TypingAnimation`, `AskArgus` (floating chat bubble with conversational AI assistant panel).
+`Button` (primary, secondary, ghost, danger), `IconButton`, `Input`, `Textarea`, `Select`, `Chip` (removable, editable), `Card` (expandable), `Modal`, `Tooltip`, `Badge` (status, trigger-type), `Tabs`, `Tree` (animated node insertion), `ChatBubble` (agent / user / prefill-card), `QuickReplyChips`, `ProgressStepper`, `DragHandle`, `EditableText` (inline edit on click), `SplitPane`, `BrowserFrame`, `HotspotOverlay`, `TourSpotlight`, `ProcessingSpinner`, `TypingAnimation`, `AskAI` (floating chat bubble with conversational AI assistant panel).
 
 ### Trigger type visual language
 
@@ -1209,8 +1209,8 @@ flowchart LR
 - Billing: Plan comparison cards highlight the current plan; action buttons are simulated (no real upgrade/downgrade)
 - Billing: History table is static mock data
 
-### Ask Argus (Floating Chat Bubble)
-- "Ask Argus" pill button floats at the bottom-right of the viewport on every page
+### Ask AI (Floating Chat Bubble)
+- "Ask AI" pill button floats at the bottom-right of the viewport on every page
 - Clicking the button opens the chat panel with a spring animation; the trigger button hides while the panel is open
 - Welcome state shows a Bot icon, greeting, description, and 3 suggestion buttons (clicking a suggestion sends it as a message)
 - User messages appear instantly in purple bubbles (right-aligned); assistant typing indicator (3 bouncing dots) shows for 0.8–1.4s before the response appears in grey bubbles (left-aligned)
@@ -1263,7 +1263,7 @@ These can be actual screenshots from the running MailFlow prototype, or simplifi
 
 1. Scaffold Vite + React + TS + Tailwind, install deps (zustand, react-router, framer-motion, lucide-react).
 2. Build the design system: tokens, base components (Button, Card, Input, Chip, Modal, etc.).
-3. Build the app shell: sidebar (with collapsible sections for Argus Copilot, Engagements, Settings + top-level Insights, Branding), top bar, routing, and the Ask Argus floating chat bubble.
+3. Build the app shell: sidebar (with collapsible sections for Copilot, Engagements, Settings + top-level Insights, Branding), top bar, routing, and the Ask AI floating chat bubble.
 4. Build the Zustand store with all slices and mock data files.
 5. **Journey 0:** Knowledge Base screen (upload zone, URL input, extracted knowledge panel).
 6. **Integrations:** Integrations screen (integration cards, connect modal, connected panel).

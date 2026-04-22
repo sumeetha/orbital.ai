@@ -2,6 +2,24 @@
 
 ## 2026-04-20 (cont. 5)
 
+### Rename: "Argus Copilot" → "Copilot", "Ask Argus" → "Ask AI"
+
+Removed all "Argus" branding from the admin UI and spec. The sidebar section is now simply "Copilot" and the floating chat is "Ask AI".
+
+**Code changes:**
+
+| File | What changed |
+|------|-------------|
+| `src/components/Sidebar.tsx` | `argusItems` → `copilotItems`, `argusPaths` → `copilotPaths`, `isArgusActive` → `isCopilotActive`, label "Argus Copilot" → "Copilot" |
+| `src/components/AskArgus.tsx` | Export `AskArgus` → `AskAI`, all visible text "Ask Argus" → "Ask AI", "Hi! I'm Argus." → "Hi! I'm your AI assistant.", placeholder "Ask Argus anything..." → "Ask AI anything..." |
+| `src/App.tsx` | Import updated from `AskArgus` to `AskAI` |
+| `src/features/insights/InsightsPage.tsx` | Subtitle: "Argus copilot" → "copilot" |
+| `src/features/integrations/IntegrationsPage.tsx` | Subtitle and connected summary: "Argus" → "the copilot" |
+
+**Spec:** All 21 occurrences of "Argus" replaced — sidebar label, route map sidebar locations, screen descriptions, store slice names, component names, interactivity section, build order.
+
+---
+
 ### Move Integrations Outside Copilot Menu
 
 Promoted Integrations from a Copilot sub-item to a top-level sidebar link, positioned between Copilot and Engagements.
@@ -10,7 +28,7 @@ Promoted Integrations from a Copilot sub-item to a top-level sidebar link, posit
 - Removed `{ to: '/integrations', ... }` from `argusItems` array
 - Added top-level `NavLink` for `/integrations` with `Plug` icon between Copilot section and Engagements section
 
-**Spec:** Updated §3 sidebar nav to show Integrations as top-level; updated route map sidebar location from "Argus Copilot → Integrations" to "Integrations"
+**Spec:** Updated §3 sidebar nav to show Integrations as top-level; updated route map sidebar location to "Integrations"
 
 ---
 

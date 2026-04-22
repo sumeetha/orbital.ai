@@ -1,113 +1,71 @@
 import {
-  createContext,
-  useContext,
   useState,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   type ReactNode,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { workflow1Steps } from './tours/workflow1';
 import { workflow2Steps } from './tours/workflow2';
+import type { TourStep, TourId, ActiveTourId, SurveyEase } from './tourTypes';
+import { TourContext } from './TourContext';
 
-export type TourStep = {
-  id: string;
-  targetId?: string;
-  route?: string;
-  message: string;
-  subMessage?: string;
-  ctaLabel?: string;
-  waitForEvent?: string;
-  /** Optional delay before auto-advance after waitForEvent is satisfied */
-  advanceDelayMs?: number;
-  isModal?: boolean;
-  /** Modal presentation; default when omitted */
-  modalKind?: 'default' | 'surveyEase' | 'surveyIssue';
-  /** Success / wrap-up modals — not shown as a numbered tour step */
-  excludeFromProgress?: boolean;
-  /**
-   * `nearest-dialog` — expand the spotlight (and tooltip avoidance) to the nearest `[role="dialog"]`
-   * ancestor so the whole dialog stays interactive and the card can sit outside the form.
-   */
-  spotlightBounds?: 'target' | 'nearest-dialog';
-};
-
-/** Feedback and celebration modals are not part of the numbered walkthrough. */
-export function stepCountsTowardProgress(step: TourStep): boolean {
-  if (step.modalKind === 'surveyEase' || step.modalKind === 'surveyIssue') return false;
-  if (step.excludeFromProgress) return false;
-  return true;
-}
-
-export function getTourProgress(steps: TourStep[], stepIndex: number): { current: number; total: number } {
-  const total = steps.filter(stepCountsTowardProgress).length;
-  const current = steps.slice(0, stepIndex + 1).filter(stepCountsTowardProgress).length;
-  return { current, total };
-}
-
-/** Which progress dot is active (handles success modals that are excluded from the count). */
-export function getHighlightDotIndex(
-  steps: TourStep[],
-  stepIndex: number,
-  progressSteps: TourStep[],
-  currentStep: TourStep | null
-): number {
-  if (!currentStep) return -1;
-  const direct = progressSteps.findIndex((s) => s.id === currentStep.id);
-  if (direct >= 0) return direct;
-  let best = -1;
-  for (let i = 0; i < progressSteps.length; i++) {
-    const si = steps.findIndex((s) => s.id === progressSteps[i].id);
-    if (si >= 0 && si < stepIndex) best = i;
-  }
-  return best;
-}
-
-export type TourId = 'workflow1' | 'workflow2';
-type ActiveTourId = TourId | 'generated';
+export type { TourStep, TourId, SurveyEase } from './tourTypes';
 
 const tourById: Record<TourId, TourStep[]> = {
   workflow1: workflow1Steps,
   workflow2: workflow2Steps,
 };
 
-export type SurveyEase = 'easy' | 'difficult' | null;
-
-type TourContextValue = {
-  activeTour: ActiveTourId | null;
-  steps: TourStep[];
-  stepIndex: number;
-  isActive: boolean;
-  currentStep: TourStep | null;
-  surveyEase: SurveyEase;
-  setSurveyEase: (v: SurveyEase) => void;
-  startTour: (id: TourId) => void;
-  startGeneratedTour: (steps: TourStep[]) => void;
-  nextStep: () => void;
-  prevStep: () => void;
-  endTour: () => void;
-};
-
-const TourContext = createContext<TourContextValue | null>(null);
+/** Wizard ?step=1..4 → tour spotlight index 0..3 (first four workflow1 steps). */
+function workflow1UrlSpotlightIndex(search: string): number {
+  const params = new URLSearchParams(search);
+  const n = Math.max(1, Math.min(4, parseInt(params.get('step') ?? '1', 10) || 1));
+  return n - 1;
+}
 
 export function TourProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentRoute = location.pathname + location.search;
   const [activeTour, setActiveTour] = useState<ActiveTourId | null>(null);
   const [generatedSteps, setGeneratedSteps] = useState<TourStep[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
   const [surveyEase, setSurveyEase] = useState<SurveyEase>(null);
-  // Track which route-based events we've navigated to
+  const [stepDeferred, setStepDeferred] = useState(false);
   const navigatedRef = useRef<string | null>(null);
+  const deferTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Tracks how the upcoming step change was triggered so the mount-effect can decide whether to defer rendering. */
+  const pendingAdvanceKindRef = useRef<'event' | 'manual' | null>(null);
 
   const steps = activeTour ? (activeTour === 'generated' ? generatedSteps : tourById[activeTour]) : [];
-  const currentStep = steps[stepIndex] ?? null;
+
+  // While on the campaign wizard, never let the spotlight lag the URL by a paint — otherwise
+  // TourOverlay's first RAF pass queries the wrong step's target (element not in DOM).
+  const resolvedDisplayIndex =
+    activeTour === 'workflow1' && location.pathname === '/campaigns/new' && stepIndex < 4
+      ? Math.max(stepIndex, workflow1UrlSpotlightIndex(location.search))
+      : stepIndex;
+
+  const currentStep = steps[resolvedDisplayIndex] ?? null;
+
+  const clearDeferTimer = () => {
+    if (deferTimerRef.current) {
+      clearTimeout(deferTimerRef.current);
+      deferTimerRef.current = null;
+    }
+  };
 
   const endTour = useCallback(() => {
+    clearDeferTimer();
+    pendingAdvanceKindRef.current = null;
     setActiveTour(null);
     setGeneratedSteps([]);
     setStepIndex(0);
     setSurveyEase(null);
+    setStepDeferred(false);
     navigatedRef.current = null;
   }, []);
 
@@ -116,10 +74,18 @@ export function TourProvider({ children }: { children: ReactNode }) {
       endTour();
       setActiveTour(id);
       setGeneratedSteps([]);
-      setStepIndex(0);
       setSurveyEase(null);
+      setStepDeferred(false);
+
+      // Align first step with the campaign wizard URL so we never "snap back" to ?step=1
+      // while the user is already on Audience / Content / Review (breaks spotlight targets).
+      let initialIndex = 0;
+      if (id === 'workflow1' && location.pathname === '/campaigns/new') {
+        initialIndex = workflow1UrlSpotlightIndex(location.search);
+      }
+      setStepIndex(initialIndex);
     },
-    [endTour]
+    [endTour, location.pathname, location.search]
   );
 
   const startGeneratedTour = useCallback(
@@ -130,82 +96,152 @@ export function TourProvider({ children }: { children: ReactNode }) {
       setActiveTour('generated');
       setStepIndex(0);
       setSurveyEase(null);
+      setStepDeferred(false);
     },
     [endTour]
   );
 
+  /** Advance without applying any showAfterMs delay (used for manual Next clicks). */
   const nextStep = useCallback(() => {
-    setStepIndex((i) => {
-      const nextIndex = i + 1;
-      if (nextIndex >= steps.length) {
-        setActiveTour(null);
-        setSurveyEase(null);
-        navigatedRef.current = null;
-        return 0;
-      }
-      return nextIndex;
-    });
-  }, [steps.length]);
+    pendingAdvanceKindRef.current = 'manual';
+    setStepIndex((i) => i + 1);
+  }, []);
 
   const prevStep = useCallback(() => {
+    pendingAdvanceKindRef.current = 'manual';
     setStepIndex((i) => Math.max(0, i - 1));
   }, []);
 
-  // Navigate when a step specifies a route
-  useEffect(() => {
-    if (!currentStep?.route) return;
-    if (navigatedRef.current === currentStep.route) return;
-    navigatedRef.current = currentStep.route;
-    navigate(currentStep.route);
-  }, [currentStep, navigate]);
+  /** Advance triggered by a bridge event (wizard Next click etc.). */
+  const advanceByEvent = useCallback(() => {
+    pendingAdvanceKindRef.current = 'event';
+    setStepIndex((i) => i + 1);
+  }, []);
 
-  // Listen for bridge events used by waitForEvent
-  useEffect(() => {
-    if (!currentStep?.waitForEvent) return;
-    const eventName = currentStep.waitForEvent;
-    const autoAdvanceDelay = currentStep.advanceDelayMs ?? 800;
+  /**
+   * Workflow 1: keep internal stepIndex aligned with the wizard URL (runs before paint so
+   * state matches resolvedDisplayIndex for any logic that still reads `stepIndex`).
+   */
+  useLayoutEffect(() => {
+    if (activeTour !== 'workflow1' || location.pathname !== '/campaigns/new') return;
+    const urlSpotlightIndex = workflow1UrlSpotlightIndex(location.search);
+    setStepIndex((i) => {
+      if (i >= 4) return i;
+      if (urlSpotlightIndex <= i) return i;
+      pendingAdvanceKindRef.current = 'manual';
+      return urlSpotlightIndex;
+    });
+  }, [activeTour, location.pathname, location.search]);
 
-    // Route-based events:
-    //   'route:/campaigns/new'       — exact match
-    //   'route:prefix:/automations/' — prefix match (any /automations/:id)
-    if (eventName.startsWith('route:')) {
-      const isPrefix = eventName.startsWith('route:prefix:');
-      const targetRoute = isPrefix
-        ? eventName.replace('route:prefix:', '')
-        : eventName.replace('route:', '');
-      const bridge = (window as any).__mailflow;
-      if (!bridge?.on) return;
-      const unsub = bridge.on('route:changed', (payload: unknown) => {
-        const p = payload as { route: string } | undefined;
-        const route = p?.route ?? (window as any).__mailflow?.route ?? '';
-        const matches = isPrefix ? route.startsWith(targetRoute) : route === targetRoute;
-        if (matches) {
-          setTimeout(() => nextStep(), autoAdvanceDelay);
-        }
-      });
-      return unsub;
+  // React to step changes: end tour if out of range, otherwise apply showAfterMs delay
+  // for event-driven advances.
+  useEffect(() => {
+    if (!activeTour) return;
+    if (stepIndex >= steps.length && steps.length > 0) {
+      // Tour finished
+      endTour();
+      return;
     }
 
-    // Standard bridge events
+    const kind = pendingAdvanceKindRef.current;
+    pendingAdvanceKindRef.current = null;
+    const delay = currentStep?.showAfterMs ?? 0;
+
+    clearDeferTimer();
+    if (kind === 'event' && delay > 0) {
+      setStepDeferred(true);
+      deferTimerRef.current = setTimeout(() => {
+        setStepDeferred(false);
+        deferTimerRef.current = null;
+      }, delay);
+    } else {
+      setStepDeferred(false);
+    }
+  }, [activeTour, stepIndex, steps.length, currentStep, endTour]);
+
+  useEffect(() => {
+    if (!currentStep?.route) return;
+    const full = location.pathname + location.search;
+
+    if (full === currentStep.route) {
+      navigatedRef.current = currentStep.route;
+      return;
+    }
+    if (navigatedRef.current === currentStep.route) return;
+
+    // Campaign wizard: never navigate to an *earlier* ?step= than the URL already shows,
+    // or we yank the user back to Templates while the tour index points at Audience.
+    if (activeTour === 'workflow1' && currentStep.route.startsWith('/campaigns/new')) {
+      const parseWizardStep = (url: string) => {
+        const q = url.includes('?') ? url.slice(url.indexOf('?')) : '';
+        const n = parseInt(new URLSearchParams(q).get('step') ?? '1', 10);
+        return Math.max(1, Math.min(4, Number.isFinite(n) ? n : 1));
+      };
+      const hereN = parseWizardStep(full);
+      const targetN = parseWizardStep(currentStep.route);
+      if (hereN > targetN) {
+        navigatedRef.current = full;
+        return;
+      }
+    }
+
+    navigatedRef.current = currentStep.route;
+    navigate(currentStep.route);
+  }, [activeTour, currentStep, navigate, location.pathname, location.search]);
+
+  // Route-based waitForEvent: watch React Router's location directly and advance when it matches.
+  // Skips the bridge round-trip entirely, which was proving unreliable.
+  useEffect(() => {
+    const eventName = currentStep?.waitForEvent;
+    if (!eventName || !eventName.startsWith('route:')) return;
+
+    // workflow1 wizard: URL → stepIndex sync is handled by the dedicated effect above.
+    if (activeTour === 'workflow1' && eventName.startsWith('route:/campaigns/new?step=')) {
+      return;
+    }
+
+    const isPrefix = eventName.startsWith('route:prefix:');
+    const targetRoute = isPrefix
+      ? eventName.replace('route:prefix:', '')
+      : eventName.replace('route:', '');
+    const matches = isPrefix ? currentRoute.startsWith(targetRoute) : currentRoute === targetRoute;
+    if (!matches) return;
+
+    const autoAdvanceDelay = currentStep.advanceDelayMs ?? 0;
+    const t = setTimeout(() => advanceByEvent(), autoAdvanceDelay);
+    return () => clearTimeout(t);
+  }, [activeTour, currentRoute, currentStep, advanceByEvent]);
+
+  // Non-route bridge events (e.g. campaign:sent, template:selected) — still use the bridge.
+  useEffect(() => {
+    const eventName = currentStep?.waitForEvent;
+    if (!eventName || eventName.startsWith('route:')) return;
+
+    const autoAdvanceDelay = currentStep?.advanceDelayMs ?? 0;
     const bridge = (window as any).__mailflow;
     if (!bridge?.on) return;
     const unsub = bridge.on(
       eventName as Parameters<typeof bridge.on>[0],
       () => {
-        setTimeout(() => nextStep(), autoAdvanceDelay);
+        setTimeout(() => advanceByEvent(), autoAdvanceDelay);
       }
     );
     return unsub;
-  }, [currentStep, nextStep]);
+  }, [currentStep, advanceByEvent]);
+
+  useEffect(() => {
+    return () => clearDeferTimer();
+  }, []);
 
   return (
     <TourContext.Provider
       value={{
         activeTour,
         steps,
-        stepIndex,
+        stepIndex: resolvedDisplayIndex,
         isActive: activeTour !== null,
         currentStep,
+        stepDeferred,
         surveyEase,
         setSurveyEase,
         startTour,
@@ -218,10 +254,4 @@ export function TourProvider({ children }: { children: ReactNode }) {
       {children}
     </TourContext.Provider>
   );
-}
-
-export function useTour(): TourContextValue {
-  const ctx = useContext(TourContext);
-  if (!ctx) throw new Error('useTour must be used inside <TourProvider>');
-  return ctx;
 }

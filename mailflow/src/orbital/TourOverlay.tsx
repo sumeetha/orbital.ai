@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { useTour, getTourProgress, getHighlightDotIndex, stepCountsTowardProgress } from './TourEngine';
+import { useTour } from './TourContext';
+import { getTourProgress, getHighlightDotIndex, stepCountsTowardProgress } from './tourTypes';
 import { useStore } from '../store';
 
 interface SpotlightRect {
@@ -130,7 +131,7 @@ function renderMessage(text: string) {
 }
 
 export default function TourOverlay() {
-  const { isActive, currentStep, steps, stepIndex, nextStep, prevStep, endTour, surveyEase, setSurveyEase } =
+  const { isActive, currentStep, steps, stepIndex, nextStep, prevStep, endTour, surveyEase, setSurveyEase, stepDeferred } =
     useTour();
   const navigate = useNavigate();
   const addToast = useStore((s) => s.addToast);
@@ -241,8 +242,18 @@ export default function TourOverlay() {
 
   if (!isActive || !currentStep) return null;
 
+  // Hidden steps are invisible pause points — render no overlay at all
+  if (currentStep.hidden) return null;
+
+  // Deferred visibility — engine is counting down the step's showAfterMs pause
+  if (stepDeferred) return null;
+
   const isLastStep = stepIndex === steps.length - 1;
   const isWaiting = !!currentStep.waitForEvent;
+  /** Route-based waits (e.g. wizard ?step=) — user may still tap tour Next to jump ahead. */
+  const routeGuidedWait =
+    !!currentStep.waitForEvent && currentStep.waitForEvent.startsWith('route:');
+  const nextDisabled = isWaiting && !routeGuidedWait;
   const modalKind = currentStep.modalKind ?? 'default';
 
   const handleNext = () => {
@@ -259,7 +270,7 @@ export default function TourOverlay() {
       navigate('/settings');
       return;
     }
-    if (!isWaiting) nextStep();
+    if (!nextDisabled) nextStep();
   };
 
   // Micro-survey: ease (two explicit choices)
@@ -566,11 +577,14 @@ export default function TourOverlay() {
             </p>
           )}
 
-          {isWaiting && (
+          {isWaiting && !routeGuidedWait && (
             <p className="text-xs text-primary mt-2 flex items-center gap-1">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
               Waiting for your action…
             </p>
+          )}
+          {routeGuidedWait && (
+            <p className="text-xs text-text-muted mt-2">You can also tap Next to continue.</p>
           )}
 
           <div className="flex items-center justify-between mt-4">
@@ -585,7 +599,7 @@ export default function TourOverlay() {
               ))}
             </div>
             <div className="flex gap-2">
-              {stepIndex > 0 && !isWaiting && (
+              {stepIndex > 0 && !nextDisabled && (
                 <button
                   onClick={prevStep}
                   className="flex items-center gap-1 text-xs text-text-muted hover:text-text px-2 py-1.5 rounded-lg hover:bg-slate-100"
@@ -596,17 +610,17 @@ export default function TourOverlay() {
               )}
               <button
                 onClick={handleNext}
-                disabled={isWaiting}
+                disabled={nextDisabled}
                 className={`flex items-center gap-1.5 text-xs font-medium px-4 py-1.5 rounded-lg transition-colors
                   ${
-                    isWaiting
+                    nextDisabled
                       ? 'bg-slate-100 text-text-muted cursor-not-allowed'
                       : 'bg-primary text-white hover:bg-primary-hover'
                   }`}
               >
                 {currentStep.ctaLabel ?? (isLastStep ? 'Done' : 'Next')}
-                {!isLastStep && !isWaiting && <ChevronRight size={13} />}
-                {isLastStep && !isWaiting && <Check size={13} />}
+                {!isLastStep && !nextDisabled && <ChevronRight size={13} />}
+                {isLastStep && !nextDisabled && <Check size={13} />}
               </button>
             </div>
           </div>
