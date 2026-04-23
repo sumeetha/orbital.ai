@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, MousePointerClick, MessageSquare,
-  User, Plug, FileEdit, ChevronDown, ChevronRight, Bot,
+  User, Plug, FileEdit, ChevronDown, ChevronRight, ListChecks,
   Zap, Map, BellRing, ClipboardList, BarChart3, Palette, Settings,
   Users, CreditCard,
 } from 'lucide-react';
@@ -19,7 +19,7 @@ function OrbitalLogo({ size = 24 }: { size?: number }) {
   );
 }
 
-const copilotItems = [
+const setupNavItems = [
   { to: '/knowledge', icon: BookOpen, label: 'Knowledge Base', journey: 'knowledge' as const },
   { to: '/annotate', icon: MousePointerClick, label: 'Annotations', journey: 'annotation' as const },
   { to: '/setup', icon: MessageSquare, label: 'Instructions', journey: 'setup' as const },
@@ -38,7 +38,7 @@ const settingsItems = [
   { to: '/settings/billing', icon: CreditCard, label: 'Billing' },
 ];
 
-const copilotPaths = copilotItems.map((item) => item.to);
+const setupNavPaths = setupNavItems.map((item) => item.to);
 const engagementPaths = engagementItems.map((item) => item.to);
 const settingsPaths = settingsItems.map((item) => item.to);
 
@@ -49,7 +49,7 @@ function CollapsibleSection({
   items,
   journeyComplete,
 }: {
-  icon: typeof Bot;
+  icon: typeof ListChecks;
   label: string;
   isActive: boolean;
   items: { to: string; icon: typeof BookOpen; label: string; journey?: string | null; end?: boolean }[];
@@ -108,7 +108,7 @@ export function Sidebar() {
   const journeyComplete = useStore((s) => s.journeyComplete);
   const location = useLocation();
 
-  const isCopilotActive = copilotPaths.some((p) =>
+  const isSetupNavActive = setupNavPaths.some((p) =>
     p === '/suggestions' ? location.pathname.startsWith('/suggestions') : location.pathname === p
   );
   const isEngagementsActive = engagementPaths.some((p) =>
@@ -142,16 +142,16 @@ export function Sidebar() {
           <span className="flex-1">Dashboard</span>
         </NavLink>
 
-        {/* Copilot */}
+        {/* Agent setup: knowledge → annotations → instructions → drafts */}
         <CollapsibleSection
-          icon={Bot}
-          label="Copilot"
-          isActive={isCopilotActive}
-          items={copilotItems}
+          icon={ListChecks}
+          label="Agent setup"
+          isActive={isSetupNavActive}
+          items={setupNavItems}
           journeyComplete={journeyComplete}
         />
 
-        {/* Integrations */}
+        {/* Integrations & Branding — adjacent */}
         <NavLink
           to="/integrations"
           className={({ isActive }) =>
@@ -162,6 +162,17 @@ export function Sidebar() {
         >
           <Plug size={18} />
           <span className="flex-1">Integrations</span>
+        </NavLink>
+        <NavLink
+          to="/branding"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              isActive ? 'bg-orbital-surface text-white' : 'text-orbital-text-muted hover:text-white hover:bg-orbital-surface/50'
+            }`
+          }
+        >
+          <Palette size={18} />
+          <span className="flex-1">Branding</span>
         </NavLink>
 
         {/* Engagements */}
@@ -183,19 +194,6 @@ export function Sidebar() {
         >
           <BarChart3 size={18} />
           <span className="flex-1">Insights</span>
-        </NavLink>
-
-        {/* Branding */}
-        <NavLink
-          to="/branding"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-              isActive ? 'bg-orbital-surface text-white' : 'text-orbital-text-muted hover:text-white hover:bg-orbital-surface/50'
-            }`
-          }
-        >
-          <Palette size={18} />
-          <span className="flex-1">Branding</span>
         </NavLink>
 
         {/* Settings */}

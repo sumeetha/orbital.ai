@@ -93,7 +93,7 @@ export function IntegrationsPage() {
     <div>
       <PageHeader
         title="Integrations"
-        subtitle="Connect your tools so the copilot can use real context when generating guidance"
+        subtitle="Connect your tools so Orbital can use real context when generating guidance"
       />
 
       {/* Connected summary */}
@@ -103,7 +103,7 @@ export function IntegrationsPage() {
             <div className="flex items-center gap-2 text-sm">
               <Check size={16} className="text-orbital-success" />
               <span className="font-medium">{connected.length} integration{connected.length > 1 ? 's' : ''} connected</span>
-              <span className="text-orbital-text-muted">— the copilot will use this context when generating drafts</span>
+              <span className="text-orbital-text-muted">— this context is used when generating drafts</span>
             </div>
           </div>
           <div className="flex flex-wrap gap-2 mt-3">

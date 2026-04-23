@@ -31,7 +31,7 @@ export function InsightsPage() {
     <div>
       <PageHeader
         title="Insights"
-        subtitle="Key metrics and risk signals based on your copilot configuration"
+        subtitle="Key metrics and risk signals based on your setup"
       />
 
       {/* KPI Cards */}

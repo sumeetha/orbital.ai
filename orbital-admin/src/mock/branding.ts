@@ -7,6 +7,8 @@ export type BrandSettings = {
   borderRadius: number;
   logoUrl: string | null;
   buttonStyle: ButtonStyle;
+  /** How in-product copy should sound (e.g. formal vs casual, inclusive language). */
+  toneOfVoice: string;
 };
 
 export const defaultBrandSettings: BrandSettings = {
@@ -16,6 +18,7 @@ export const defaultBrandSettings: BrandSettings = {
   borderRadius: 8,
   logoUrl: null,
   buttonStyle: 'filled',
+  toneOfVoice: '',
 };
 
 export const fontOptions = [
@@ -32,4 +35,5 @@ export const autoDetectedBrand: Partial<BrandSettings> = {
   fontFamily: '"DM Sans"',
   borderRadius: 12,
   buttonStyle: 'rounded-pill',
+  toneOfVoice: 'Clear, encouraging, and concise — expert without jargon.',
 };

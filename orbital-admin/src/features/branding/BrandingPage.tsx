@@ -283,6 +283,19 @@ export function BrandingPage() {
                 />
               </div>
               <div className="col-span-2">
+                <label className="text-xs text-orbital-text-muted mb-1.5 block">Tone of Voice</label>
+                <textarea
+                  value={brandSettings.toneOfVoice}
+                  onChange={(e) => updateBrandSetting('toneOfVoice', e.target.value)}
+                  placeholder="e.g. Friendly and direct; avoid hype; use inclusive language."
+                  rows={3}
+                  className="w-full px-3 py-2 text-sm border border-orbital-border-light rounded-lg resize-y min-h-[72px] focus:outline-none focus:ring-2 focus:ring-orbital-primary/30 bg-white"
+                />
+                <p className="text-[11px] text-orbital-text-muted mt-1">
+                  Describes how tours, nudges, and assistant copy should sound to end users.
+                </p>
+              </div>
+              <div className="col-span-2">
                 <label className="text-xs text-orbital-text-muted mb-1.5 block">Button Style</label>
                 <div className="flex gap-3">
                   {(['filled', 'outlined', 'rounded-pill'] as ButtonStyle[]).map((style) => (

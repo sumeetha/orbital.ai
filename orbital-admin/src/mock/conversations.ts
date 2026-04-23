@@ -11,7 +11,7 @@ export type PrefillField = {
 
 export type AgentMessage = {
   id: string;
-  topic: 'intro' | 'overview' | 'activation' | 'plans' | 'metrics' | 'friction' | 'complete';
+  topic: 'intro' | 'overview' | 'activation' | 'plans' | 'metrics' | 'friction' | 'guidelines' | 'complete';
   type: MessageType;
   content: string;
   prefillFields?: PrefillField[];
@@ -222,12 +222,42 @@ export const conversationScript: AgentMessage[] = [
     ],
   },
 
+  // Topic 6: General Guidelines
+  {
+    id: 'guidelines-1',
+    topic: 'guidelines',
+    type: 'agent',
+    content: "Almost done. Beyond friction areas, is there anything else the in-product assistant should always follow—internal rules, preferred terminology, compliance notes, or topics to avoid?",
+  },
+  {
+    id: 'guidelines-2',
+    topic: 'guidelines',
+    type: 'prefill-card',
+    content: 'General Guidelines',
+    prefillFields: [
+      {
+        key: 'generalGuidelines',
+        label: 'Additional instructions, rules & things to address',
+        value: 'Use plain language; avoid promising specific deliverability outcomes; when users ask about GDPR, point them to our Trust Center.',
+        type: 'textarea',
+      },
+    ],
+    sourceAttribution: 'Optional — add anything not already covered above',
+  },
+  {
+    id: 'guidelines-3',
+    topic: 'guidelines',
+    type: 'agent',
+    content: "Got it. I'll treat these as guardrails when drafting tours, nudges, and in-app copy.",
+    isFollowUp: true,
+  },
+
   // Completion
   {
     id: 'complete-1',
     topic: 'complete',
     type: 'agent',
-    content: "Setup complete! I now have a clear picture of MailFlow, your goals, your plan structure, and your risk signals. Let me generate some intelligent guidance suggestions for your users.",
+    content: "Setup complete! I now have a clear picture of MailFlow, your goals, your plan structure, risk signals, and how you want guidance framed. Let me generate some intelligent suggestions for your users.",
   },
   {
     id: 'complete-2',
@@ -237,7 +267,7 @@ export const conversationScript: AgentMessage[] = [
   },
 ];
 
-export const topicOrder = ['overview', 'activation', 'plans', 'metrics', 'friction'] as const;
+export const topicOrder = ['overview', 'activation', 'plans', 'metrics', 'friction', 'guidelines'] as const;
 export type Topic = (typeof topicOrder)[number];
 
 export const topicLabels: Record<string, string> = {
@@ -246,4 +276,5 @@ export const topicLabels: Record<string, string> = {
   plans: 'Trial & Plan Structure',
   metrics: 'Key Metrics',
   friction: 'Friction Points',
+  guidelines: 'General Guidelines',
 };

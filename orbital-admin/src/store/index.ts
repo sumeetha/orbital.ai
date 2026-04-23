@@ -4,6 +4,7 @@ import { type Hotspot, hotspots } from '../mock/hotspots';
 import { type Suggestion, type RateLimits, mockSuggestions, defaultRateLimits } from '../mock/suggestions';
 import { type Engagement, type EngagementStatus, mockEngagements } from '../mock/engagements';
 import { type BrandSettings, defaultBrandSettings, autoDetectedBrand } from '../mock/branding';
+import { topicOrder } from '../mock/conversations';
 import { type TeamMember, type TeamRole, mockTeamMembers, type BillingInfo, mockBillingInfo } from '../mock/settings';
 
 type CapturedElement = {
@@ -22,6 +23,7 @@ type SetupAnswers = {
   primaryAhaMoment: string;
   riskMetrics: string[];
   frictionPoints: string[];
+  generalGuidelines: string;
 };
 
 type AppState = {
@@ -163,13 +165,14 @@ export const useStore = create<AppState>((set, get) => ({
     primaryAhaMoment: 'First campaign sent',
     riskMetrics: [],
     frictionPoints: [],
+    generalGuidelines: '',
   },
   currentTopic: 0,
   completedTopics: [],
   confirmTopic: (topic) =>
     set((s) => ({
       completedTopics: s.completedTopics.includes(topic) ? s.completedTopics : [...s.completedTopics, topic],
-      currentTopic: Math.min(s.currentTopic + 1, 4),
+      currentTopic: Math.min(s.currentTopic + 1, topicOrder.length - 1),
     })),
   updateSetupAnswer: (field, value) =>
     set((s) => ({ setupAnswers: { ...s.setupAnswers, [field]: value } })),
