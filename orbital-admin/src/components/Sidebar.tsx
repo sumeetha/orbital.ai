@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, MousePointerClick, MessageSquare,
   User, Plug, FileEdit, ChevronDown, ChevronRight, ListChecks,
-  Zap, Map, BellRing, ClipboardList, BarChart3, Palette, Settings,
+  Zap, BarChart3, Palette, Settings,
   Users, CreditCard,
 } from 'lucide-react';
 import { useStore } from '../store';
@@ -26,20 +26,12 @@ const setupNavItems = [
   { to: '/suggestions', icon: FileEdit, label: 'Drafts', journey: 'suggestions' as const },
 ];
 
-const engagementItems = [
-  { to: '/engagements', icon: Zap, label: 'All Engagements', end: true },
-  { to: '/engagements/tours', icon: Map, label: 'Tours' },
-  { to: '/engagements/nudges', icon: BellRing, label: 'Nudges' },
-  { to: '/engagements/feedback', icon: ClipboardList, label: 'Feedback' },
-];
-
 const settingsItems = [
   { to: '/settings/team', icon: Users, label: 'Team' },
   { to: '/settings/billing', icon: CreditCard, label: 'Billing' },
 ];
 
 const setupNavPaths = setupNavItems.map((item) => item.to);
-const engagementPaths = engagementItems.map((item) => item.to);
 const settingsPaths = settingsItems.map((item) => item.to);
 
 function CollapsibleSection({
@@ -111,9 +103,7 @@ export function Sidebar() {
   const isSetupNavActive = setupNavPaths.some((p) =>
     p === '/suggestions' ? location.pathname.startsWith('/suggestions') : location.pathname === p
   );
-  const isEngagementsActive = engagementPaths.some((p) =>
-    p === '/engagements' ? location.pathname.startsWith('/engagements') : location.pathname === p
-  );
+  const isEngagementsActive = location.pathname.startsWith('/engagements');
   const isSettingsActive = settingsPaths.some((p) => location.pathname === p) || location.pathname === '/settings';
 
   return (
@@ -175,13 +165,18 @@ export function Sidebar() {
           <span className="flex-1">Branding</span>
         </NavLink>
 
-        {/* Engagements */}
-        <CollapsibleSection
-          icon={Zap}
-          label="Engagements"
-          isActive={isEngagementsActive}
-          items={engagementItems}
-        />
+        {/* Engagements — type filters live as tabs on the page */}
+        <NavLink
+          to="/engagements"
+          className={() =>
+            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              isEngagementsActive ? 'bg-orbital-surface text-white' : 'text-orbital-text-muted hover:text-white hover:bg-orbital-surface/50'
+            }`
+          }
+        >
+          <Zap size={18} />
+          <span className="flex-1">Engagements</span>
+        </NavLink>
 
         {/* Insights */}
         <NavLink

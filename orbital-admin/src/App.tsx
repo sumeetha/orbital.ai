@@ -10,9 +10,6 @@ import { SuggestionsPage } from './features/suggestions/SuggestionsPage';
 import { SuggestionDetailPage } from './features/suggestions/SuggestionDetailPage';
 import { EngagementsPage } from './features/engagements/EngagementsPage';
 import { CreateEngagementPage } from './features/engagements/CreateEngagementPage';
-import { ToursPage } from './features/engagements/ToursPage';
-import { NudgesPage } from './features/engagements/NudgesPage';
-import { FeedbackPage } from './features/engagements/FeedbackPage';
 import { InsightsPage } from './features/insights/InsightsPage';
 import { BrandingPage } from './features/branding/BrandingPage';
 import { TeamPage } from './features/settings/TeamPage';
@@ -32,11 +29,11 @@ export default function App() {
             <Route path="/setup" element={<SetupPage />} />
             <Route path="/suggestions" element={<SuggestionsPage />} />
             <Route path="/suggestions/:id" element={<SuggestionDetailPage />} />
-            <Route path="/engagements" element={<EngagementsPage />} />
+            <Route path="/engagements/tours" element={<Navigate to="/engagements?type=tour" replace />} />
+            <Route path="/engagements/nudges" element={<Navigate to="/engagements?type=nudge" replace />} />
+            <Route path="/engagements/feedback" element={<Navigate to="/engagements?type=feedback" replace />} />
             <Route path="/engagements/new" element={<CreateEngagementPage />} />
-            <Route path="/engagements/tours" element={<ToursPage />} />
-            <Route path="/engagements/nudges" element={<NudgesPage />} />
-            <Route path="/engagements/feedback" element={<FeedbackPage />} />
+            <Route path="/engagements" element={<EngagementsPage />} />
             <Route path="/insights" element={<InsightsPage />} />
             <Route path="/branding" element={<BrandingPage />} />
             <Route path="/settings" element={<Navigate to="/settings/team" replace />} />

@@ -47,13 +47,19 @@ function SubTypeBadge({ subType }: { subType?: EngagementSubType }) {
   );
 }
 
-export function EngagementsPage({ filterType }: { filterType?: EngagementType }) {
+const engagementTypes = ['tour', 'nudge', 'feedback'] as const;
+
+export function EngagementsPage() {
   const { engagements, pauseEngagement, resumeEngagement, archiveEngagement } = useStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const tabFilter = filterType || (searchParams.get('type') as EngagementType | null);
+  const rawType = searchParams.get('type');
+  const typeFilter =
+    rawType && engagementTypes.includes(rawType as (typeof engagementTypes)[number])
+      ? (rawType as EngagementType)
+      : null;
 
-  const filtered = tabFilter ? engagements.filter((e) => e.type === tabFilter) : engagements;
+  const filtered = typeFilter ? engagements.filter((e) => e.type === typeFilter) : engagements;
 
   const counts = {
     tour: engagements.filter((e) => e.type === 'tour').length,
@@ -62,15 +68,13 @@ export function EngagementsPage({ filterType }: { filterType?: EngagementType })
   };
   const activeCount = engagements.filter((e) => e.status === 'active').length;
 
-  const title = filterType
-    ? typeConfig[filterType].pluralLabel
-    : 'Engagements';
-  const subtitle = filterType
-    ? `All ${typeConfig[filterType].label.toLowerCase()} engagements`
+  const title = typeFilter ? typeConfig[typeFilter].pluralLabel : 'Engagements';
+  const subtitle = typeFilter
+    ? `All ${typeConfig[typeFilter].label.toLowerCase()} engagements`
     : 'All active tours, nudges, and feedback';
 
   const openCreateFlow = () => {
-    const targetType = tabFilter ? `?type=${tabFilter}` : '';
+    const targetType = typeFilter ? `?type=${typeFilter}` : '';
     navigate(`/engagements/new${targetType}`);
   };
 
@@ -86,7 +90,7 @@ export function EngagementsPage({ filterType }: { filterType?: EngagementType })
         )}
       />
 
-      {!filterType && (
+      {!typeFilter && (
         <div className="grid grid-cols-4 gap-4 mb-6">
           <Card className="p-4">
             <div className="text-2xl font-bold text-orbital-text-dark">{engagements.length}</div>
@@ -116,27 +120,26 @@ export function EngagementsPage({ filterType }: { filterType?: EngagementType })
         </div>
       )}
 
-      {!filterType && (
-        <div className="flex gap-2 mb-4">
-          {([null, 'tour', 'nudge', 'feedback'] as const).map((t) => (
-            <button
-              key={t ?? 'all'}
-              onClick={() => {
-                if (t) searchParams.set('type', t);
-                else searchParams.delete('type');
-                setSearchParams(searchParams);
-              }}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                tabFilter === t || (!tabFilter && t === null)
-                  ? 'bg-orbital-primary text-white'
-                  : 'bg-white text-orbital-text-muted border border-orbital-border-light hover:bg-slate-50'
-              }`}
-            >
-              {t ? typeConfig[t].pluralLabel : 'All'}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="flex gap-2 mb-4">
+        {([null, 'tour', 'nudge', 'feedback'] as const).map((t) => (
+          <button
+            key={t ?? 'all'}
+            onClick={() => {
+              const next = new URLSearchParams(searchParams);
+              if (t) next.set('type', t);
+              else next.delete('type');
+              setSearchParams(next);
+            }}
+            className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              typeFilter === t || (!typeFilter && t === null)
+                ? 'bg-orbital-primary text-white'
+                : 'bg-white text-orbital-text-muted border border-orbital-border-light hover:bg-slate-50'
+            }`}
+          >
+            {t ? typeConfig[t].pluralLabel : 'All'}
+          </button>
+        ))}
+      </div>
 
       {filtered.length === 0 ? (
         <Card className="p-12 text-center">
